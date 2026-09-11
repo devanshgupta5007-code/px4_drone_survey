@@ -917,16 +917,17 @@ class TkinterGCS:
                                fill="#161615", outline="#282826", width=1)
 
         # ── 5e. ISO 20ft Shipping Containers (with cast shadow) ──────────────
+        # West staging compound (10N, -38E) and East staging compound (110N, 38E)
         containers = [
-            (78.0, -18.0, "#18211a", "#2a3d2c"),
-            (38.0, 18.0, "#1a1d21", "#2c313d"),
+            (10.0, -38.0, "#161c16", "#283629"),
+            (110.0, 38.0, "#181a1e", "#282d38"),
         ]
         for cx_m, cy_m, c_fill, c_outline in containers:
             c_cx, c_cy, sc = self.world_to_canvas(cx_m, cy_m, cw, ch)
             hw = 1.22 * sc  # half-width
             hl = 3.03 * sc  # half-length
 
-            # Shadow (offset 2px SE, darker)
+            # Cast shadow (offset 2.5px SE)
             c.create_rectangle(c_cx - hw + 2, c_cy - hl + 2, c_cx + hw + 2, c_cy + hl + 2,
                                fill="#020201", outline="")
             # Container body
@@ -937,13 +938,106 @@ class TkinterGCS:
             for i in range(rib_count):
                 ry = c_cy - hl + (2 * hl) * (i + 0.5) / rib_count
                 c.create_line(c_cx - hw + 1, ry, c_cx + hw - 1, ry, fill=c_outline, width=1)
-            # Door end marking
+            # Door end line
             c.create_line(c_cx - hw + 2, c_cy + hl - 2, c_cx + hw - 2, c_cy + hl - 2,
-                          fill="#3a4a3c", width=1)
+                          fill="#354236", width=1)
 
-        # ── 5f. Disaster Rubble & Collapse Debris ────────────────────────────
-        rubble_zones = [(60.0, 0.0), (25.0, -22.0)]
-        for rx_m, ry_m in rubble_zones:
+        # ── 5f. Partially Collapsed 2-Story Concrete Building (95N, 30E) ─────
+        bld_cx, bld_cy, sc = self.world_to_canvas(95.0, 30.0, cw, ch)
+        bw_px = 3.5 * sc
+        bl_px = 3.5 * sc
+        # Concrete floor footprint
+        c.create_rectangle(bld_cx - bw_px, bld_cy - bl_px, bld_cx + bw_px, bld_cy + bl_px,
+                           fill="#0a0a09", outline="#1c1b18", width=1)
+        # Cast shadow from standing west wall
+        c.create_rectangle(bld_cx - bw_px - 1, bld_cy - bl_px, bld_cx - bw_px + 3, bld_cy + bl_px + 2,
+                           fill="#020201", outline="")
+        # Standing west wall (heavy solid line)
+        c.create_line(bld_cx - bw_px, bld_cy - bl_px, bld_cx - bw_px, bld_cy + bl_px,
+                      fill="#3a3834", width=3)
+        # Partial south wall
+        c.create_line(bld_cx - bw_px, bld_cy + bl_px, bld_cx + 0.5 * sc, bld_cy + bl_px,
+                      fill="#32302c", width=2.5)
+        # Tilted collapsed roof slab (angled polygon with fracture lines)
+        rf_p1_x = bld_cx - 1.5 * sc
+        rf_p1_y = bld_cy - 2.5 * sc
+        rf_p2_x = bld_cx + 3.2 * sc
+        rf_p2_y = bld_cy - 2.0 * sc
+        rf_p3_x = bld_cx + 2.8 * sc
+        rf_p3_y = bld_cy + 2.5 * sc
+        rf_p4_x = bld_cx - 1.0 * sc
+        rf_p4_y = bld_cy + 2.0 * sc
+        c.create_polygon(rf_p1_x, rf_p1_y, rf_p2_x, rf_p2_y, rf_p3_x, rf_p3_y, rf_p4_x, rf_p4_y,
+                         fill="#11100e", outline="#252320", width=1)
+        c.create_line(rf_p1_x + 5, rf_p1_y + 8, rf_p3_x - 6, rf_p3_y - 8,
+                      fill="#1e1c18", width=1, dash=(3, 2))
+        # Label
+        c.create_text(bld_cx, bld_cy - bl_px - 6, text="COLLAPSED STRUCT",
+                      fill="#383632", font=("Consolas", 5, "bold"))
+
+        # ── 5g. Sandbag Emplacement & Damaged Wall ───────────────────────────
+        # Sandbag defensive arc at (90N, 26E)
+        sb_cx, sb_cy, _ = self.world_to_canvas(90.0, 26.0, cw, ch)
+        c.create_line(sb_cx - 2.0 * sc, sb_cy - 0.5 * sc,
+                      sb_cx, sb_cy + 1.2 * sc,
+                      sb_cx + 1.8 * sc, sb_cy + 0.8 * sc,
+                      fill="#2e2a22", width=2, smooth=True)
+        # Damaged free-standing wall at (65N, 20E)
+        dw_cx, dw_cy, _ = self.world_to_canvas(65.0, 20.0, cw, ch)
+        c.create_line(dw_cx - 1.5 * sc, dw_cy - 2.2 * sc, dw_cx + 1.5 * sc, dw_cy + 2.2 * sc,
+                      fill="#282622", width=2)
+        c.create_line(dw_cx - 1.5 * sc + 1.5, dw_cy - 2.2 * sc + 1.5,
+                      dw_cx + 1.5 * sc + 1.5, dw_cy + 2.2 * sc + 1.5,
+                      fill="#040403", width=1)
+
+        # ── 5h. FOB Staging Tent & Logistics Support Complex ─────────────────
+        # FOB Staging Tent at (8N, -12E)
+        fob_cx, fob_cy, _ = self.world_to_canvas(8.0, -12.0, cw, ch)
+        tw = 2.5 * sc
+        tl = 4.0 * sc
+        # Tent floor
+        c.create_rectangle(fob_cx - tw, fob_cy - tl, fob_cx + tw, fob_cy + tl,
+                           fill="#0c0e0b", outline="#1e241c", width=1)
+        # Tent center ridge line
+        c.create_line(fob_cx, fob_cy - tl, fob_cx, fob_cy + tl, fill="#2c3629", width=1.5)
+        # Guy lines
+        for gy in [-tl * 0.8, 0, tl * 0.8]:
+            c.create_line(fob_cx - tw, fob_cy + gy, fob_cx - tw - 3, fob_cy + gy, fill="#161a14", width=1)
+            c.create_line(fob_cx + tw, fob_cy + gy, fob_cx + tw + 3, fob_cy + gy, fill="#161a14", width=1)
+        c.create_text(fob_cx, fob_cy, text="FOB STAGING", fill="#344030", font=("Consolas", 5, "bold"))
+
+        # Parked Utility Truck at (12N, -20E)
+        trk_cx, trk_cy, _ = self.world_to_canvas(12.0, -20.0, cw, ch)
+        trw = 1.1 * sc
+        trl = 2.75 * sc
+        # Shadow
+        c.create_rectangle(trk_cx - trw + 1.5, trk_cy - trl + 1.5, trk_cx + trw + 1.5, trk_cy + trl + 1.5,
+                           fill="#020201", outline="")
+        # Flatbed
+        c.create_rectangle(trk_cx - trw, trk_cy - trl * 0.3, trk_cx + trw, trk_cy + trl,
+                           fill="#141413", outline="#222220", width=1)
+        # Cab (forward/north)
+        c.create_rectangle(trk_cx - trw * 0.95, trk_cy - trl, trk_cx + trw * 0.95, trk_cy - trl * 0.3,
+                           fill="#242320", outline="#383632", width=1)
+        # Windshield line
+        c.create_line(trk_cx - trw * 0.8, trk_cy - trl * 0.8, trk_cx + trw * 0.8, trk_cy - trl * 0.8,
+                      fill="#0e1012", width=1.5)
+
+        # Supply Pallets at (105N, 36E) & Generator at (5N, -8E)
+        pal_cx, pal_cy, _ = self.world_to_canvas(105.0, 36.0, cw, ch)
+        c.create_rectangle(pal_cx - 1.2 * sc, pal_cy - 0.8 * sc, pal_cx + 1.2 * sc, pal_cy + 0.8 * sc,
+                           fill="#1c1812", outline="#2e261a", width=1)
+        gen_cx, gen_cy, _ = self.world_to_canvas(5.0, -8.0, cw, ch)
+        c.create_rectangle(gen_cx - 0.5 * sc, gen_cy - 0.6 * sc, gen_cx + 0.5 * sc, gen_cy + 0.6 * sc,
+                           fill="#241a08", outline="#3d2c10", width=1)
+
+        # ── 5i. Disaster Rubble & Collapse Debris Clusters ───────────────────
+        # Matching Gazebo: Cluster 1 at (72N, 15E), Cluster 2 at (25N, -18E)
+        rubble_zones = [
+            (72.0, 15.0, "DEBRIS ZONE 1"),
+            (25.0, -18.0, "DEBRIS ZONE 2"),
+        ]
+        for rx_m, ry_m, r_tag in rubble_zones:
             r_cx, r_cy, sc = self.world_to_canvas(rx_m, ry_m, cw, ch)
             rw_px = 3.5 * sc
             # Irregular rubble perimeter
@@ -951,20 +1045,37 @@ class TkinterGCS:
                           r_cx + rw_px, r_cy + rw_px * 0.65,
                           fill="#0e0d0b", outline="#1a1917", width=1, dash=(2, 3))
             # Scattered rubble fragments inside
-            rng = random.Random(int(rx_m * 100 + ry_m * 10))  # deterministic per zone
-            for _ in range(12):
-                fx = r_cx + rng.uniform(-rw_px * 0.7, rw_px * 0.7)
-                fy = r_cy + rng.uniform(-rw_px * 0.45, rw_px * 0.45)
+            rng = random.Random(int(rx_m * 100 + ry_m * 10))
+            for _ in range(14):
+                fx = r_cx + rng.uniform(-rw_px * 0.75, rw_px * 0.75)
+                fy = r_cy + rng.uniform(-rw_px * 0.50, rw_px * 0.50)
                 fs = rng.uniform(1.0, 2.5)
                 c.create_rectangle(fx - fs, fy - fs, fx + fs, fy + fs,
-                                   fill="#131210", outline="#1c1b18", width=1)
+                                   fill="#151412", outline="#22201c", width=1)
+            # Rebar wire lines protruding from rubble
+            c.create_line(r_cx - 1.2 * sc, r_cy - 0.5 * sc, r_cx - 2.0 * sc, r_cy - 1.0 * sc,
+                          fill="#2a241e", width=1)
+            c.create_line(r_cx + 0.8 * sc, r_cy + 0.6 * sc, r_cx + 1.8 * sc, r_cy + 1.1 * sc,
+                          fill="#2a241e", width=1)
+            c.create_text(r_cx, r_cy + rw_px * 0.75 + 4, text=r_tag,
+                          fill="#3a3834", font=("Consolas", 5))
 
-        # ── 5g. Tire Tracks / Vehicle Ruts ───────────────────────────────────
+        # ── 5j. Mud Puddles (Standing Water with Specular Tint) ───────────────
+        puddles = [(45.0, -8.0, 2.0, 1.4), (80.0, 12.0, 1.8, 1.2), (95.0, -25.0, 2.2, 1.5)]
+        for mx, my, pw, ph in puddles:
+            pud_x, pud_y, _ = self.world_to_canvas(mx, my, cw, ch)
+            c.create_oval(pud_x - pw * scale * 0.5, pud_y - ph * scale * 0.5,
+                          pud_x + pw * scale * 0.5, pud_y + ph * scale * 0.5,
+                          fill="#06080a", outline="#12161a", width=1)
+
+        # ── 5k. Tire Tracks / Vehicle Ruts ───────────────────────────────────
         tire_tracks = [
-            [(2.0, -2.0), (15.0, -3.0), (30.0, -1.0), (45.0, -2.5), (55.0, -1.5)],
-            [(2.0, -4.0), (15.0, -5.0), (30.0, -3.0), (45.0, -4.5), (55.0, -3.5)],
-            [(65.0, 0.0), (80.0, 1.5), (95.0, 0.5), (110.0, 1.0), (118.0, 0.0)],
-            [(65.0, -2.0), (80.0, -0.5), (95.0, -1.5), (110.0, -1.0), (118.0, -2.0)],
+            # Track from helipad to west compound / truck
+            [(2.0, -2.0), (6.0, -8.0), (10.0, -15.0), (12.0, -20.0), (10.0, -35.0)],
+            [(3.0, -1.0), (7.0, -7.0), (11.0, -14.0), (13.0, -19.0), (11.0, -34.0)],
+            # Central supply corridor
+            [(15.0, 0.0), (35.0, 5.0), (55.0, 2.0), (75.0, 8.0), (95.0, 15.0), (110.0, 32.0)],
+            [(16.0, 1.5), (36.0, 6.5), (56.0, 3.5), (76.0, 9.5), (96.0, 16.5), (111.0, 33.5)],
         ]
         for track in tire_tracks:
             pts = []
@@ -972,7 +1083,7 @@ class TkinterGCS:
                 tx_c, ty_c, _ = self.world_to_canvas(tx_m, ty_m, cw, ch)
                 pts.extend([tx_c, ty_c])
             if len(pts) >= 4:
-                c.create_line(*pts, fill="#090908", width=1.5, smooth=True)
+                c.create_line(*pts, fill="#090908", width=1.2, smooth=True)
 
         # ── 6. Survey Swath Corridors ────────────────────────────────────────
         lane_y_coords = [-36.0, -18.0, 0.0, 18.0, 36.0]
