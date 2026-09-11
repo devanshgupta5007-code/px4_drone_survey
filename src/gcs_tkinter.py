@@ -64,6 +64,8 @@ class TkinterGCS:
         self.start_time = time.time()
         self.trail: List[Tuple[float, float]] = []
         self.last_trail_pt = (0.0, 0.0)
+        self.coverage_patches: List[Tuple[float, float, float, float, float, float, float, float]] = []
+        self.last_coverage_time = 0.0
         self.tree_tick = 0
 
         # Interactive Map Navigation State (Pan & Zoom)
@@ -197,6 +199,12 @@ class TkinterGCS:
         nav_btn_frame = tk.Frame(m_head, bg=self.c_header)
         nav_btn_frame.pack(side=tk.RIGHT, padx=6, pady=3)
 
+        btn_sitrep = tk.Button(nav_btn_frame, text="SITREP", font=("Consolas", 7, "bold"),
+                               bg="#181818", fg=self.c_red_bright, activebackground="#242424",
+                               activeforeground="#ffffff", relief=tk.FLAT, bd=0, padx=4, pady=1,
+                               command=self._export_sitrep_action)
+        btn_sitrep.pack(side=tk.RIGHT, padx=2)
+
         self.btn_follow = tk.Button(nav_btn_frame, text="FOLLOW", font=("Consolas", 7, "bold"),
                                     bg="#141414", fg=self.c_text_low, activebackground="#242424",
                                     activeforeground="#ffffff", relief=tk.FLAT, bd=0, padx=4, pady=1,
@@ -267,32 +275,37 @@ class TkinterGCS:
                   background=[("selected", "#2b0a0a")],
                   foreground=[("selected", "#ffffff")])
 
-        columns = ("id", "class", "pos", "sigma", "hits", "status")
+        columns = ("id", "pri", "class", "pos", "sigma", "hits", "status")
         self.tree = ttk.Treeview(table_frame, columns=columns, show="headings", height=7)
         self.tree.heading("id", text="ID")
-        self.tree.heading("class", text="ENTITY")
+        self.tree.heading("pri", text="PRI")
+        self.tree.heading("class", text="TACTICAL RECON ENTITY")
         self.tree.heading("pos", text="COORDINATES (NED)")
         self.tree.heading("sigma", text="1-SIGMA")
         self.tree.heading("hits", text="HITS")
         self.tree.heading("status", text="STATUS")
 
-        self.tree.column("id", width=28, minwidth=24, anchor=tk.CENTER)
-        self.tree.column("class", width=125, minwidth=90, anchor=tk.W)
-        self.tree.column("pos", width=120, minwidth=90, anchor=tk.CENTER)
-        self.tree.column("sigma", width=70, minwidth=50, anchor=tk.CENTER)
-        self.tree.column("hits", width=38, minwidth=30, anchor=tk.CENTER)
-        self.tree.column("status", width=70, minwidth=50, anchor=tk.CENTER)
+        self.tree.column("id", width=24, minwidth=20, anchor=tk.CENTER)
+        self.tree.column("pri", width=36, minwidth=28, anchor=tk.CENTER)
+        self.tree.column("class", width=120, minwidth=85, anchor=tk.W)
+        self.tree.column("pos", width=110, minwidth=80, anchor=tk.CENTER)
+        self.tree.column("sigma", width=65, minwidth=45, anchor=tk.CENTER)
+        self.tree.column("hits", width=34, minwidth=26, anchor=tk.CENTER)
+        self.tree.column("status", width=65, minwidth=45, anchor=tk.CENTER)
         self.tree.pack(fill=tk.BOTH, expand=True)
+
+        self.tree.bind("<Double-Button-1>", self._on_tree_double_click)
 
         def _on_table_resize(event):
             tw = event.width - 16
             if tw > 180:
-                self.tree.column("id", width=max(24, int(tw * 0.07)))
-                self.tree.column("class", width=max(90, int(tw * 0.29)))
-                self.tree.column("pos", width=max(90, int(tw * 0.27)))
-                self.tree.column("sigma", width=max(50, int(tw * 0.15)))
-                self.tree.column("hits", width=max(30, int(tw * 0.08)))
-                self.tree.column("status", width=max(50, int(tw * 0.14)))
+                self.tree.column("id", width=max(20, int(tw * 0.06)))
+                self.tree.column("pri", width=max(28, int(tw * 0.08)))
+                self.tree.column("class", width=max(85, int(tw * 0.30)))
+                self.tree.column("pos", width=max(80, int(tw * 0.24)))
+                self.tree.column("sigma", width=max(45, int(tw * 0.13)))
+                self.tree.column("hits", width=max(26, int(tw * 0.06)))
+                self.tree.column("status", width=max(45, int(tw * 0.13)))
         table_frame.bind("<Configure>", _on_table_resize)
 
         # System Log Header
@@ -307,6 +320,150 @@ class TkinterGCS:
                                 highlightbackground=self.c_border_subtle, highlightthickness=1)
         self.log_text.grid(row=5, column=0, sticky="ew", padx=4, pady=(1, 4))
         self.log_msg("PX4 Tactical Reconnaissance GCS online. Ready for mission telemetry.")
+
+    def _export_sitrep_action(self):
+        """Action handler to export mission SITREP markdown and JSON."""
+        if self.mission is not None and hasattr(self.mission, 'export_sitrep'):
+            try:
+                self.mission.export_sitrep()
+                self.log_msg("SITREP EXPORT SUCCESS: MISSION_RECON_SITREP.json and MISSION_RECON_SITREP.md generated.")
+            except Exception as e:
+                self.log_msg(f"SITREP EXPORT FAILED: {e}")
+        else:
+            self.log_msg("SITREP EXPORT: No active mission telemetry controller.")
+
+    def _on_tree_double_click(self, event):
+        """Handles double click on a target row to open target inspection modal."""
+        item = self.tree.identify_row(event.y)
+        if not item:
+            item = self.tree.focus()
+        if item and item.startswith("tgt_"):
+            try:
+                tid = int(item.split("_")[1])
+                self._show_target_vignette(tid)
+            except Exception as e:
+                self.log_msg(f"Target inspection error: {e}")
+
+    def _show_target_vignette(self, target_id: int):
+        """Displays interactive high-contrast tactical modal for target vignette and photogrammetric triage."""
+        target = None
+        if self.mission is not None and hasattr(self.mission, 'detector'):
+            for t in self.mission.detector.get_all_targets():
+                if t.target_id == target_id:
+                    target = t
+                    break
+
+        modal = tk.Toplevel(self.root)
+        modal.title(f"TACTICAL RECON VIGNETTE — TARGET #{target_id:02d}")
+        # Center modal relative to root window
+        rx = self.root.winfo_rootx()
+        ry = self.root.winfo_rooty()
+        rw = self.root.winfo_width()
+        rh = self.root.winfo_height()
+        pos_x = max(60, rx + (rw - 580) // 2)
+        pos_y = max(60, ry + (rh - 620) // 2)
+        modal.geometry(f"580x620+{pos_x}+{pos_y}")
+        modal.minsize(500, 550)
+        modal.configure(bg="#080808")
+        modal.transient(self.root)
+
+        # Header banner
+        header = tk.Frame(modal, bg=self.c_header, height=36)
+        header.pack(fill=tk.X, side=tk.TOP)
+        tk.Label(header, text=f"TARGET #{target_id:02d} OPTICAL VIGNETTE & ANALYSIS",
+                 font=("Consolas", 10, "bold"), fg=self.c_red_bright, bg=self.c_header).pack(side=tk.LEFT, padx=12, pady=8)
+
+        btn_close = tk.Button(header, text="✕ CLOSE", font=("Consolas", 8, "bold"),
+                              bg="#1a1a1a", fg="#a0a0a0", activebackground="#2a2a2a",
+                              activeforeground="#ffffff", relief=tk.FLAT, bd=0, padx=8, pady=2,
+                              command=modal.destroy)
+        btn_close.pack(side=tk.RIGHT, padx=10, pady=6)
+
+        content = tk.Frame(modal, bg="#080808")
+        content.pack(fill=tk.BOTH, expand=True, padx=16, pady=12)
+
+        # Image Container (240x240 optical vignette)
+        img_frame = tk.Frame(content, bg="#000000", highlightbackground="#222222", highlightthickness=1, width=260, height=260)
+        img_frame.pack(side=tk.TOP, pady=(0, 12))
+        img_frame.pack_propagate(False)
+
+        img_label = tk.Label(img_frame, bg="#000000")
+        img_label.pack(fill=tk.BOTH, expand=True)
+
+        crop = getattr(target, 'best_crop', None) if target else None
+        if crop is None and target and hasattr(target, 'crop_path') and os.path.exists(target.crop_path):
+            try:
+                crop = cv2.imread(target.crop_path)
+            except Exception:
+                crop = None
+
+        if crop is not None:
+            try:
+                rgb_crop = cv2.cvtColor(crop, cv2.COLOR_BGR2RGB)
+                rgb_crop = cv2.resize(rgb_crop, (240, 240), interpolation=cv2.INTER_AREA)
+                pil_img = Image.fromarray(rgb_crop)
+                photo_ref = ImageTk.PhotoImage(image=pil_img)
+                img_label.config(image=photo_ref)
+                img_label.image = photo_ref  # keep reference to prevent GC
+            except Exception:
+                img_label.config(text="IMAGE RENDERING ERROR", fg="#555555", font=("Consolas", 9))
+        else:
+            # Placeholder reticle
+            ph_canvas = tk.Canvas(img_frame, width=240, height=240, bg="#020202", highlightthickness=0)
+            ph_canvas.pack(fill=tk.BOTH, expand=True)
+            ph_canvas.create_line(120, 20, 120, 220, fill="#1c1c1c", width=1)
+            ph_canvas.create_line(20, 120, 220, 120, fill="#1c1c1c", width=1)
+            ph_canvas.create_oval(70, 70, 170, 170, outline="#222222", width=1)
+            ph_canvas.create_text(120, 110, text="[OPTICAL VIGNETTE]", fill="#444444", font=("Consolas", 8, "bold"))
+            ph_canvas.create_text(120, 130, text="NO CROPPED FRAME CAPTURED YET", fill="#333333", font=("Consolas", 7))
+
+        # Target metadata details grid
+        data_frame = tk.Frame(content, bg="#0d0d0d", highlightbackground="#1c1c1c", highlightthickness=1)
+        data_frame.pack(fill=tk.BOTH, expand=True)
+
+        if target is not None:
+            t_name = getattr(target, 'triage_name', target.display_name if hasattr(target, 'display_name') else target.color_name)
+            t_pri = getattr(target, 'priority', 'P2 - HIGH')
+            t_act = getattr(target, 'action', 'Aerial Reconnaissance')
+            t_dims = getattr(target, 'nominal_dims', '1.0m x 1.0m x 0.6m')
+            lat, lon = target.wgs84_coords if hasattr(target, 'wgs84_coords') else (47.397971, 8.546164)
+            pos_str = f"({target.x:+.2f}m N, {target.y:+.2f}m E)"
+            gps_str = f"{lat:.6f}°N, {lon:.6f}°E"
+            sig_str = f"±{target.pos_std_dev:.2f} m"
+            obs_str = f"{target.observations} detections (Kalman EKF filtered)"
+            stat_str = "● LOCKED & CONFIRMED" if target.confirmed else "◌ TRACKING (UNCONFIRMED)"
+        else:
+            t_name = f"TARGET #{target_id:02d}"
+            t_pri = "UNKNOWN"
+            t_act = "N/A"
+            t_dims = "N/A"
+            pos_str = "N/A"
+            gps_str = "N/A"
+            sig_str = "N/A"
+            obs_str = "0"
+            stat_str = "NOT LOCATED"
+
+        pri_color = "#ff3333" if "P1" in t_pri else (self.c_red_bright if "P2" in t_pri else "#888888")
+
+        rows = [
+            ("TACTICAL ENTITY", t_name, self.c_text_high),
+            ("PRIORITY LEVEL", t_pri, pri_color),
+            ("RECOMMENDED ACTION", t_act, "#ffffff"),
+            ("PHYSICAL DIMS", t_dims, "#aaaaaa"),
+            ("LOCAL POSITION (NED)", pos_str, "#ffffff"),
+            ("GPS WGS84 COORDS", gps_str, "#ffffff"),
+            ("POSITION UNCERTAINTY", sig_str, self.c_text_med),
+            ("SAMPLE OBSERVATIONS", obs_str, "#aaaaaa"),
+            ("EKF FILTER STATUS", stat_str, pri_color),
+        ]
+
+        for label, val, col in rows:
+            r_frame = tk.Frame(data_frame, bg="#0d0d0d")
+            r_frame.pack(fill=tk.X, padx=12, pady=3)
+            tk.Label(r_frame, text=label, font=("Consolas", 7, "bold"), fg=self.c_text_low, bg="#0d0d0d", width=22, anchor="w").pack(side=tk.LEFT)
+            tk.Label(r_frame, text=val, font=("Consolas", 8, "bold"), fg=col, bg="#0d0d0d", anchor="w").pack(side=tk.LEFT, fill=tk.X, expand=True)
+
+        modal.bind("<Escape>", lambda e: modal.destroy())
 
     def _create_status_chip(self, parent, label_text, val_default, val_color):
         chip = tk.Frame(parent, bg=self.c_card, highlightbackground=self.c_border_subtle, highlightthickness=1)
@@ -561,9 +718,13 @@ class TkinterGCS:
                     else:
                         color_token = raw_col.split("_")[0]
                     shape_name = f"■ CUBE [{color_token}]"
+                    pri_raw = getattr(t, 'priority', 'P2 - HIGH')
+                    pri_badge = pri_raw.split(" ")[0] if " " in pri_raw else pri_raw
+                    triage_title = getattr(t, 'triage_name', shape_name)
                     vals = (
                         f"{t.target_id:02d}",
-                        shape_name,
+                        f"[{pri_badge}]",
+                        triage_title,
                         f"({t.x:+.1f}, {t.y:+.1f})",
                         f"±{t.pos_std_dev:.2f} m",
                         f"{t.observations}",
@@ -612,6 +773,15 @@ class TkinterGCS:
         a_bl_x, a_bl_y, _ = self.world_to_canvas(0.0, -45.0, cw, ch)
         a_tr_x, a_tr_y, _ = self.world_to_canvas(120.0, 45.0, cw, ch)
         c.create_rectangle(a_bl_x, a_tr_y, a_tr_x, a_bl_y, fill="#030303", outline="#1c1c1c", width=1.5)
+
+        # 2b. Photogrammetric Ground Coverage Heatmap (Aggregated Area Surveyed)
+        for p in self.coverage_patches:
+            cp1_x, cp1_y, _ = self.world_to_canvas(p[0], p[1], cw, ch)
+            cp2_x, cp2_y, _ = self.world_to_canvas(p[2], p[3], cw, ch)
+            cp3_x, cp3_y, _ = self.world_to_canvas(p[4], p[5], cw, ch)
+            cp4_x, cp4_y, _ = self.world_to_canvas(p[6], p[7], cw, ch)
+            c.create_polygon(cp1_x, cp1_y, cp2_x, cp2_y, cp3_x, cp3_y, cp4_x, cp4_y,
+                             fill="#120508", outline="")
 
         # 3. Coordinate Grid Lines every 20m (Neutral Dark Charcoal)
         grid_col = "#0c0c0c"
@@ -678,6 +848,30 @@ class TkinterGCS:
             c.create_rectangle(oc_x - bw, oc_y - bh, oc_x + bw, oc_y + bh,
                                fill="#181818", outline="#2e2e2e", width=1)
             c.create_text(oc_x, oc_y, text=o_tag, fill="#505050", font=("Consolas", 5))
+
+        # 5e. Industrial ISO 20ft Shipping Containers (West & East Zones)
+        containers = [(78.0, -18.0, "ISO 20FT [WEST]"), (38.0, 18.0, "ISO 20FT [EAST]")]
+        for cx_m, cy_m, c_tag in containers:
+            c_cx, c_cy, scale = self.world_to_canvas(cx_m, cy_m, cw, ch)
+            cw_px = 1.22 * scale  # half-width = 1.22m
+            cl_px = 3.03 * scale  # half-length = 3.03m
+            c.create_rectangle(c_cx - cw_px, c_cy - cl_px, c_cx + cw_px, c_cy + cl_px,
+                               fill="#161916", outline="#2f3b2f", width=1.5)
+            # Corrugated roof ribs
+            for cor_i in [-2, -1, 0, 1, 2]:
+                c.create_line(c_cx - cw_px + 2, c_cy + cor_i * (cl_px / 3.0),
+                              c_cx + cw_px - 2, c_cy + cor_i * (cl_px / 3.0),
+                              fill="#222822", width=1)
+            c.create_text(c_cx, c_cy, text=c_tag, fill="#6b806b", font=("Consolas", 5, "bold"))
+
+        # 5f. Disaster Rubble & Masonry Collapse Zones
+        rubble_zones = [(60.0, 0.0, "COLLAPSE ZONE 1"), (25.0, -22.0, "COLLAPSE ZONE 2")]
+        for rx_m, ry_m, r_tag in rubble_zones:
+            r_cx, r_cy, scale = self.world_to_canvas(rx_m, ry_m, cw, ch)
+            rw_px = 3.2 * scale
+            c.create_oval(r_cx - rw_px, r_cy - rw_px * 0.7, r_cx + rw_px, r_cy + rw_px * 0.7,
+                          fill="#141312", outline="#2b2825", width=1, dash=(2, 2))
+            c.create_text(r_cx, r_cy, text=r_tag, fill="#5a5652", font=("Consolas", 5, "bold"))
 
         # 6. 18m Survey Swath Corridors & Turnaround Waypoints
         lane_y_coords = [-36.0, -18.0, 0.0, 18.0, 36.0]
@@ -765,47 +959,59 @@ class TkinterGCS:
         c.create_text(h_x, h_y, text="H", fill=self.c_text_high, font=("Consolas", 8, "bold"))
         c.create_text(h_x, h_y + 13, text="LAUNCH/RTL", fill="#555555", font=("Consolas", 6))
 
-        # 11. Confirmed CUBE Targets with Shape Badges & Covariance Uncertainty
+        # 11. Confirmed Contacts with Triage Priority Badges & Covariance Uncertainty
         if self.mission is not None:
             for t in self.mission.detector.get_all_targets():
                 tx_c, ty_c, scale = self.world_to_canvas(t.x, t.y, cw, ch)
                 r_cov = max(7, t.pos_std_dev * scale)
 
-                # Covariance Uncertainty Circle (Dark Crimson)
-                c.create_oval(tx_c - r_cov, ty_c - r_cov, tx_c + r_cov, ty_c + r_cov,
-                              outline="#66101d", width=1)
+                pri_str = getattr(t, 'priority', 'P2 - HIGH')
+                pri_tok = pri_str.split(" ")[0] if " " in pri_str else "P2"
+                t_name = getattr(t, 'triage_name', t.color_name)
 
-                # True Geometry Square Glyph for CUBE Entity
-                c.create_rectangle(tx_c - 4, ty_c - 4, tx_c + 4, ty_c + 4,
-                                   fill=self.c_red_dark, outline=self.c_red_bright, width=1.5)
-
-                raw_name = t.color_name.upper()
-                for c_tok in ["RED", "YELLOW", "GREEN", "ORANGE", "BLUE", "PURPLE", "CYAN"]:
-                    if c_tok in raw_name:
-                        color_label = c_tok
-                        break
+                if "P1" in pri_tok:
+                    cov_outline = "#881322"
+                    glyph_fill = "#4c0519"
+                    glyph_outline = "#ff2b4b"
+                    badge_border = "#991b1b"
+                elif "P2" in pri_tok:
+                    cov_outline = "#66101d"
+                    glyph_fill = self.c_red_dark
+                    glyph_outline = self.c_red_bright
+                    badge_border = "#2b0a0a"
                 else:
-                    color_label = raw_name.split("_")[0]
+                    cov_outline = "#262626"
+                    glyph_fill = "#171717"
+                    glyph_outline = "#525252"
+                    badge_border = "#262626"
 
-                tag_str = f"■ #{t.target_id} CUBE [{color_label}]"
+                # Covariance Uncertainty Circle
+                c.create_oval(tx_c - r_cov, ty_c - r_cov, tx_c + r_cov, ty_c + r_cov,
+                              outline=cov_outline, width=1)
+
+                # Target Geometry Glyphs
+                c.create_rectangle(tx_c - 4, ty_c - 4, tx_c + 4, ty_c + 4,
+                                   fill=glyph_fill, outline=glyph_outline, width=1.5)
+
+                tag_str = f"#{t.target_id:02d} [{pri_tok}] {t_name}"
 
                 # Boundary edge guard: flip label anchor if close to right margin
-                if tx_c > (cw - 110):
+                if tx_c > (cw - 130):
                     tag_x = tx_c - 8
                     tag_anchor = "e"
-                    box_x0 = tag_x - len(tag_str) * 6.2 - 2
+                    box_x0 = tag_x - len(tag_str) * 6.0 - 4
                     box_x1 = tag_x + 2
                 else:
                     tag_x = tx_c + 8
                     tag_anchor = "w"
                     box_x0 = tag_x - 2
-                    box_x1 = tag_x + len(tag_str) * 6.2 + 2
+                    box_x1 = tag_x + len(tag_str) * 6.0 + 4
 
                 # Crisp High-Contrast Backing Badge
-                c.create_rectangle(box_x0, ty_c - 6, box_x1, ty_c + 6,
-                                   fill="#060606", outline="#202020", width=1)
+                c.create_rectangle(box_x0, ty_c - 7, box_x1, ty_c + 7,
+                                   fill="#050505", outline=badge_border, width=1)
                 c.create_text(tag_x, ty_c, text=tag_str,
-                              anchor=tag_anchor, fill=self.c_text_high, font=("Consolas", 8, "bold"))
+                              anchor=tag_anchor, fill=self.c_text_high, font=("Consolas", 7, "bold"))
 
         # 12. Drone Quadcopter Silhouette & Optical Nadir Ground Projection
         dp_x, dp_y, scale = self.world_to_canvas(px, py, cw, ch)
@@ -828,6 +1034,19 @@ class TkinterGCS:
 
         p_near_l_x = px + (fov_ahead_ctr - fov_depth_half) * math.cos(yaw_rad) - (fov_half_w * 0.85) * math.sin(yaw_rad)
         p_near_l_y = py + (fov_ahead_ctr - fov_depth_half) * math.sin(yaw_rad) + (fov_half_w * 0.85) * math.cos(yaw_rad)
+
+        # Accumulate photogrammetric ground coverage patch when airborne
+        now = time.time()
+        if alt >= 3.0 and (now - self.last_coverage_time) >= 0.25:
+            self.last_coverage_time = now
+            self.coverage_patches.append((
+                p_near_l_x, p_near_l_y,
+                p_far_l_x, p_far_l_y,
+                p_far_r_x, p_far_r_y,
+                p_near_r_x, p_near_r_y
+            ))
+            if len(self.coverage_patches) > 1500:
+                self.coverage_patches = self.coverage_patches[-1500:]
 
         c_fl_x, c_fl_y, _ = self.world_to_canvas(p_far_l_x, p_far_l_y, cw, ch)
         c_fr_x, c_fr_y, _ = self.world_to_canvas(p_far_r_x, p_far_r_y, cw, ch)

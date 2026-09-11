@@ -32,18 +32,26 @@ from typing import Dict, List, Tuple, Optional
 
 class TargetPositionEstimator:
     """
-    2D Recursive Kalman Filter for estimating ground coordinates of a target cube.
+    2D Recursive Kalman Filter for estimating ground coordinates of a target entity.
     State: [x_north, y_east] (meters NED)
     Covariance: P (2x2)
     """
-    def __init__(self, target_id: int, color_name: str, init_x: float, init_y: float, bbox: Tuple[int, int, int, int], initial_range: float):
+    def __init__(self, target_id: int, color_name: str, init_x: float, init_y: float,
+                 bbox: Tuple[int, int, int, int], initial_range: float, triage_info: Optional[Dict] = None):
         self.target_id = target_id
         self.color_name = color_name
         self.shape_type = "CUBE"
 
-        # Explicit shape-based display name (e.g. "CUBE [RED]")
-        color_clean = color_name.replace("_CUBE", "").replace("_BOX", "").replace("_CRATE", "").replace("_", " ")
-        self.display_name = f"CUBE [{color_clean}]"
+        # Standardized HADR / Tactical Triage Details
+        triage = triage_info or {}
+        self.triage_name = triage.get("name", color_name.replace("_CUBE", "").replace("_", " "))
+        self.priority = triage.get("priority", "P2 - HIGH")
+        self.action = triage.get("action", "Inspect and Verify")
+        self.nominal_dims = triage.get("nominal_dims", "1.0m x 1.0m x 0.6m")
+
+        # Explicit shape-based display name (e.g. "[P1] SURVIVOR SHELTER")
+        pri_tag = self.priority.split()[0]
+        self.display_name = f"{pri_tag} {self.triage_name}"
 
         # State vector [North, East] (m)
         self.state = np.array([init_x, init_y], dtype=np.float64)
@@ -59,9 +67,11 @@ class TargetPositionEstimator:
         self.first_seen = time.time()
         self.last_seen = time.time()
 
-        # Best visual snapshot (closest to optical center)
+        # Best visual snapshot & optical cropped vignette
         self.best_dist_to_center = 9999.0
         self.best_frame: Optional[np.ndarray] = None
+        self.best_crop: Optional[np.ndarray] = None
+        self.crop_path: str = ""
         self.snapshot_saved = False
 
         self.confirmed = False
@@ -73,6 +83,15 @@ class TargetPositionEstimator:
     @property
     def y(self) -> float:
         return float(self.state[1])
+
+    @property
+    def wgs84_coords(self) -> Tuple[float, float]:
+        """Converts local NED (North, East) to simulated WGS84 (Latitude, Longitude)."""
+        base_lat = 47.397971057728974
+        base_lon = 8.546163739800146
+        lat = base_lat + (self.x / 111139.0)
+        lon = base_lon + (self.y / (111139.0 * math.cos(math.radians(base_lat))))
+        return lat, lon
 
     @property
     def pos_std_dev(self) -> float:
@@ -117,7 +136,17 @@ class TargetPositionEstimator:
             self.best_dist_to_center = dist_center
             self.best_frame = frame.copy()
 
-        # Confirmation criteria: at least 4 observations, persistence > 0.15s, and uncertainty <= 0.85m
+            # Extract 240x240 optical vignette centered on target
+            fh, fw = frame.shape[:2]
+            cu, cv = int(u), int(v)
+            half_box = 120
+            u0, u1 = max(0, cu - half_box), min(fw, cu + half_box)
+            v0, v1 = max(0, cv - half_box), min(fh, cv + half_box)
+            if (u1 - u0) > 40 and (v1 - v0) > 40:
+                crop = frame[v0:v1, u0:u1].copy()
+                self.best_crop = cv2.resize(crop, (240, 240))
+
+        # Confirmation criteria: at least 4 observations, persistence > 0.12s, and uncertainty <= 0.85m
         if self.observations >= 4 and (self.last_seen - self.first_seen) >= 0.12 and self.pos_std_dev <= 0.85:
             self.confirmed = True
 
@@ -186,6 +215,59 @@ class AerialBoxDetector:
             "BLUE_CUBE": 5,
             "PURPLE_CUBE": 6,
             "CYAN_CUBE": 7,
+        }
+
+        # Standardized HADR / Tactical Reconnaissance Triage Specifications
+        self.triage_specs = {
+            "RED_CUBE": {
+                "id": 1,
+                "name": "TRAUMA MEDICAL CACHE",
+                "priority": "P2 - HIGH",
+                "action": "Dispatch Field Triage & Medical Evacuation Team",
+                "nominal_dims": "0.9m x 0.9m x 0.5m",
+            },
+            "YELLOW_CUBE": {
+                "id": 2,
+                "name": "HAZMAT TOXIC SPILL",
+                "priority": "P1 - CRITICAL",
+                "action": "Cordon 100m Perimeter / Hazardous Material Containment",
+                "nominal_dims": "1.0m x 1.0m x 0.7m",
+            },
+            "GREEN_CUBE": {
+                "id": 3,
+                "name": "EMERGENCY RATIONS POD",
+                "priority": "P2 - HIGH",
+                "action": "Survivor Provision Replenishment & Distribution",
+                "nominal_dims": "0.9m x 0.9m x 0.5m",
+            },
+            "ORANGE_CUBE": {
+                "id": 4,
+                "name": "SURVIVOR SHELTER",
+                "priority": "P1 - CRITICAL",
+                "action": "Deploy Search & Rescue Extraction Team Immediately",
+                "nominal_dims": "1.2m x 1.2m x 0.6m",
+            },
+            "BLUE_CUBE": {
+                "id": 5,
+                "name": "EMERGENCY WATER IBC",
+                "priority": "P2 - HIGH",
+                "action": "Relief Water Logistics & Distribution",
+                "nominal_dims": "1.0m x 1.0m x 0.8m",
+            },
+            "PURPLE_CUBE": {
+                "id": 6,
+                "name": "COMMS RELAY STATION",
+                "priority": "P3 - LOGISTICS",
+                "action": "Secure Tactical Mesh Radio Repeater Link",
+                "nominal_dims": "0.9m x 0.9m x 0.6m",
+            },
+            "CYAN_CUBE": {
+                "id": 7,
+                "name": "UNEXPLODED ORDNANCE",
+                "priority": "P1 - HAZARD",
+                "action": "EOD / Demining Disposal Team Dispatch Required",
+                "nominal_dims": "0.8m x 0.8m x 0.4m",
+            },
         }
 
         # Persistent Estimators: Exactly one estimator per challenge target color
@@ -432,7 +514,8 @@ class AerialBoxDetector:
                         estimator = self.targets[color_name]
                         estimator.update(box_x, box_y, (x, y, w, h), ground_range, frame, u, v)
                     else:
-                        estimator = TargetPositionEstimator(target_id, color_name, box_x, box_y, (x, y, w, h), ground_range)
+                        triage_meta = self.triage_specs.get(color_name)
+                        estimator = TargetPositionEstimator(target_id, color_name, box_x, box_y, (x, y, w, h), ground_range, triage_info=triage_meta)
                         self.targets[color_name] = estimator
 
                 if color_name in self.targets:
@@ -442,6 +525,10 @@ class AerialBoxDetector:
                         "color": color_name,
                         "shape": target_obj.shape_type,
                         "name": target_obj.display_name,
+                        "triage_name": target_obj.triage_name,
+                        "priority": target_obj.priority,
+                        "action": target_obj.action,
+                        "crop_path": target_obj.crop_path,
                         "est_x": target_obj.x,
                         "est_y": target_obj.y,
                         "std_dev": target_obj.pos_std_dev,
@@ -450,18 +537,37 @@ class AerialBoxDetector:
                         "confirmed": target_obj.confirmed
                     })
 
-                    # Save official snapshot if newly confirmed
+                    # Save official snapshot and high-resolution optical vignette if newly confirmed
                     if target_obj.confirmed and not target_obj.snapshot_saved and target_obj.best_frame is not None:
                         target_obj.snapshot_saved = True
+                        clean_name = target_obj.triage_name.lower().replace(" ", "_")
                         snapshot_path = os.path.join(self.output_dir, f"target_{target_obj.target_id}_{color_name.lower()}.jpg")
+                        vignette_path = os.path.join(self.output_dir, f"vignette_{target_obj.target_id}_{clean_name}.jpg")
+                        target_obj.crop_path = vignette_path
+
+                        # Save full annotated optical view
                         snap_img = target_obj.best_frame.copy()
                         cv2.putText(snap_img, f"TARGET #{target_obj.target_id}: {target_obj.display_name} [CONFIRMED]", (20, 35),
                                     cv2.FONT_HERSHEY_SIMPLEX, 0.70, (230, 230, 235), 2, cv2.LINE_AA)
                         cv2.putText(snap_img, f"POS NED: ({target_obj.x:+.2f}m, {target_obj.y:+.2f}m) +/-{target_obj.pos_std_dev:.2f}m",
                                     (20, 70), cv2.FONT_HERSHEY_SIMPLEX, 0.58, (25, 25, 180), 2, cv2.LINE_AA)
                         cv2.imwrite(snapshot_path, snap_img)
-                        print(f"\n[CUBE LOCKED] #{target_obj.target_id} {target_obj.display_name} confirmed at "
-                              f"({target_obj.x:+.2f}m, {target_obj.y:+.2f}m) +/-{target_obj.pos_std_dev:.2f}m [{target_obj.observations} hits]", flush=True)
+
+                        # Save cropped high-resolution target vignette
+                        if target_obj.best_crop is not None:
+                            vig_img = target_obj.best_crop.copy()
+                            cv2.rectangle(vig_img, (0, 0), (240, 24), (4, 4, 6), -1)
+                            cv2.line(vig_img, (0, 24), (240, 24), (15, 15, 120), 1)
+                            cv2.putText(vig_img, f"#{target_obj.target_id} {target_obj.display_name}",
+                                        (6, 16), cv2.FONT_HERSHEY_SIMPLEX, 0.34, (230, 230, 235), 1, cv2.LINE_AA)
+                            cv2.rectangle(vig_img, (0, 216), (240, 240), (4, 4, 6), -1)
+                            cv2.line(vig_img, (0, 216), (240, 216), (15, 15, 120), 1)
+                            cv2.putText(vig_img, f"NED: ({target_obj.x:+.1f}, {target_obj.y:+.1f})m",
+                                        (6, 232), cv2.FONT_HERSHEY_SIMPLEX, 0.32, (180, 180, 180), 1, cv2.LINE_AA)
+                            cv2.imwrite(vignette_path, vig_img)
+
+                        print(f"\n[HADR CONTACT LOCKED] #{target_obj.target_id} {target_obj.display_name} at "
+                              f"({target_obj.x:+.2f}m, {target_obj.y:+.2f}m) +/-{target_obj.pos_std_dev:.2f}m [{target_obj.observations} hits] -> Action: {target_obj.action}", flush=True)
 
                     status_icon = "[LOCKED]" if target_obj.confirmed else "[TRACK]"
                     tag_label = f"#{target_obj.target_id} {target_obj.display_name} {status_icon}"
@@ -543,10 +649,10 @@ class AerialBoxDetector:
         # 5. Target Lock Counter (Top Left Functional Badge with Sleek Obsidian Pill)
         total_targets = len(self.color_ranges)
         confirmed_count = sum(1 for t in self.targets.values() if t.confirmed)
-        cv2.rectangle(img, (8, 32), (130, 52), (4, 4, 6), -1)
-        cv2.rectangle(img, (8, 32), (130, 52), (28, 28, 34), 1)
+        cv2.rectangle(img, (8, 32), (168, 52), (4, 4, 6), -1)
+        cv2.rectangle(img, (8, 32), (168, 52), (28, 28, 34), 1)
         tgt_badge_col = (25, 25, 180) if confirmed_count >= total_targets else (203, 213, 225)
-        cv2.putText(img, f"CUBES: {confirmed_count}/{total_targets}", (14, 46),
+        cv2.putText(img, f"HADR RECON: {confirmed_count}/{total_targets}", (14, 46),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.38, tgt_badge_col, 1, cv2.LINE_AA)
 
     def _record_video_frame(self, frame: np.ndarray):

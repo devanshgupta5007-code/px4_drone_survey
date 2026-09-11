@@ -12,6 +12,7 @@ import time
 import asyncio
 import threading
 import collections
+import json
 from typing import List, Tuple, Dict, Optional
 from enum import Enum
 import cv2
@@ -36,6 +37,7 @@ class SurveyState(Enum):
     TRANSIT_START = "TRANSIT_TO_LANE_1"
     SURVEYING = "SURVEY_LANE"
     DUBINS_TURN = "DUBINS_ARC_TURN"
+    VERIFY_CONTACTS = "VERIFY_PRIORITY_TARGETS"
     COMPLETE = "SURVEY_COMPLETE"
     RTL_LAND = "RETURN_AND_LAND"
 
@@ -246,9 +248,11 @@ class SurveyMission:
             cross_track_err_int = max(-1.2, min(1.2, cross_track_err_int))
             v_cross = max(-1.3, min(1.3, -0.85 * cross_track_err - 0.15 * cross_track_err_int))
 
-            # Altitude hold
-            alt_err = altitude - (-pz)
-            v_down = max(-0.8, min(0.8, -0.85 * alt_err))
+            # Dynamic Terrain-Following: Maintain constant AGL above local topography
+            terrain_z = self.detector.get_terrain_elevation(px, py)
+            target_agl_alt = altitude - terrain_z
+            alt_err = target_agl_alt - (-pz)
+            v_down = max(-0.85, min(0.85, -0.85 * alt_err))
 
             vn = target_speed * ux + v_cross * nx
             ve = target_speed * uy + v_cross * ny
@@ -312,8 +316,11 @@ class SurveyMission:
             vn_cmd = vn_ref + 0.60 * err_x
             ve_cmd = ve_ref + 0.60 * err_y
 
-            alt_err = altitude - (-pz)
-            vd_cmd = max(-0.8, min(0.8, -0.85 * alt_err))
+            # Dynamic Terrain-Following during coordinated Dubins turn
+            terrain_z = self.detector.get_terrain_elevation(px, py)
+            target_agl_alt = altitude - terrain_z
+            alt_err = target_agl_alt - (-pz)
+            vd_cmd = max(-0.85, min(0.85, -0.85 * alt_err))
 
             try:
                 await self.drone.offboard.set_velocity_ned(VelocityNedYaw(vn_cmd, ve_cmd, vd_cmd, yaw_deg))
@@ -455,12 +462,43 @@ class SurveyMission:
                 self.log(f"Coordinated Dubins Arc Turn {self.current_lane}->{self.current_lane+1} (R={arc['radius']}m)")
                 await self._fly_dubins_arc(arc, self.survey_altitude, speed=self.turn_speed)
 
-        # 7. Survey Complete -> Return to Launch and Land
+        # 7. Phase 1 Swaths Complete -> Phase 2: Priority Target Verification Pass
+        confirmed = self.detector.get_confirmed_targets()
+        p1_targets = [t for t in confirmed if "P1" in getattr(t, "priority", "")]
+
+        if p1_targets:
+            self.state = SurveyState.VERIFY_CONTACTS
+            self.log(f"Phase 1 Complete. Initiating Phase 2: Verification Pass on {len(p1_targets)} P1 contacts...")
+            print("\n" + "="*78)
+            print(f"   PHASE 2: ADAPTIVE VERIFICATION PASS ({len(p1_targets)} PRIORITY 1 CONTACTS)   ")
+            print("="*78)
+
+            for pt in p1_targets:
+                with self.telemetry_lock:
+                    cur_x, cur_y = self.pos_x, self.pos_y
+                    cur_yaw = math.degrees(self.yaw_rad)
+
+                hdg_to_tgt = math.degrees(math.atan2(pt.y - cur_y, pt.x - cur_x)) % 360.0
+                print(f"[PHASE 2] Inspecting #{pt.target_id} {pt.display_name} at ({pt.x:.1f}N, {pt.y:.1f}E)...", flush=True)
+                self.log(f"Verification look: #{pt.target_id} {pt.display_name}")
+
+                await self._smooth_yaw_turn(self.survey_altitude, cur_yaw, hdg_to_tgt)
+                # Approach target at inspection altitude (9.0m)
+                await self._fly_smooth_segment(
+                    (cur_x, cur_y), (pt.x, pt.y), altitude=9.0, yaw_deg=hdg_to_tgt,
+                    speed=3.8, decelerate_at_end=True
+                )
+                await asyncio.sleep(1.2)
+
+        # 8. Survey Complete -> Return to Launch and Land
         self.state = SurveyState.COMPLETE
         print("\n==================================================================")
-        print("      ALL 5 SURVEY LANES COMPLETED VIA CONTINUOUS DUBINS TURNS    ")
+        print("     ALL RECONNAISSANCE SWATHS & VERIFICATION PASSES COMPLETED    ")
         print("==================================================================")
-        self.log("Survey lanes completed. Commanding RTL.")
+        self.log("All reconnaissance phases completed. Generating SITREP and commanding RTL.")
+
+        # Export formal military/civil defense SITREP
+        self.export_sitrep()
 
         self.state = SurveyState.RTL_LAND
         print("[MAVSDK] Disengaging Offboard mode and commanding Return to Launch (RTL)...")
@@ -497,6 +535,90 @@ class SurveyMission:
         # Print Final Comprehensive Survey & Detection Report
         self._print_final_report()
 
+    def export_sitrep(self, filename_prefix: str = "MISSION_RECON_SITREP"):
+        """Generates formal structured JSON and formatted Markdown Situation Report (SITREP)."""
+        output_dir = self.detector.output_dir
+        targets = self.detector.get_confirmed_targets()
+        sitrep_time = time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime())
+        duration_s = time.time() - getattr(self, "mission_start_time", time.time())
+
+        sitrep_data = {
+            "mission": "PX4_AUTONOMOUS_HADR_RECONNAISSANCE",
+            "sitrep_id": f"SITREP-{int(time.time())}",
+            "timestamp": sitrep_time,
+            "duration_seconds": round(duration_s, 1),
+            "survey_area_m2": 10800.0,
+            "swaths_flown": self.total_lanes,
+            "flight_speed_mps": self.survey_speed,
+            "target_summary": {
+                "total_contacts_acquired": len(targets),
+                "critical_p1_count": sum(1 for t in targets if "P1" in getattr(t, "priority", "")),
+                "high_p2_count": sum(1 for t in targets if "P2" in getattr(t, "priority", "")),
+                "logistic_p3_count": sum(1 for t in targets if "P3" in getattr(t, "priority", "")),
+            },
+            "entities": []
+        }
+
+        for t in targets:
+            lat, lon = t.wgs84_coords
+            sitrep_data["entities"].append({
+                "id": t.target_id,
+                "priority": getattr(t, "priority", "P2 - HIGH"),
+                "classification": getattr(t, "triage_name", t.display_name),
+                "action": getattr(t, "action", "Inspect and Verify"),
+                "nominal_dims": getattr(t, "nominal_dims", "1.0m x 1.0m x 0.6m"),
+                "coordinates_ned": {"north_m": round(t.x, 2), "east_m": round(t.y, 2), "down_m": 0.0},
+                "coordinates_wgs84": {"latitude_deg": round(lat, 7), "longitude_deg": round(lon, 7)},
+                "uncertainty_sigma_m": round(t.pos_std_dev, 3),
+                "observations": t.observations,
+                "vignette_file": os.path.basename(getattr(t, "crop_path", ""))
+            })
+
+        # Save JSON
+        json_path = os.path.join(output_dir, f"{filename_prefix}.json")
+        try:
+            with open(json_path, "w") as f:
+                json.dump(sitrep_data, f, indent=2)
+            print(f"[SITREP] JSON report written to: {json_path}", flush=True)
+        except Exception as e:
+            print(f"[SITREP] Failed to write JSON report: {e}", flush=True)
+
+        # Save Markdown Report
+        md_path = os.path.join(output_dir, f"{filename_prefix}.md")
+        try:
+            with open(md_path, "w") as f:
+                f.write(f"# Tactical Situation Report (SITREP) — Aerial Reconnaissance\n\n")
+                f.write(f"**Mission:** PX4 Autonomous HADR & Tactical Reconnaissance  \n")
+                f.write(f"**Report Timestamp:** {sitrep_time}  \n")
+                f.write(f"**Mission Flight Duration:** {duration_s:.1f} s  \n")
+                f.write(f"**Proving Ground Area:** 120m x 90m (10,800 m²) | 5 Swaths @ 18m Spacing  \n")
+                f.write(f"**Cruise Speed:** {self.survey_speed} m/s | Constant 12.0m AGL (Terrain-Following)  \n\n")
+                f.write(f"---\n\n")
+                f.write(f"## 1. Triage Summary\n\n")
+                f.write(f"- **Total Contacts Acquired:** {len(targets)} / {len(self.detector.color_ranges)}\n")
+                f.write(f"- **Priority 1 (Critical Life / Hazard):** {sitrep_data['target_summary']['critical_p1_count']}\n")
+                f.write(f"- **Priority 2 (High Resource):** {sitrep_data['target_summary']['high_p2_count']}\n")
+                f.write(f"- **Priority 3 (Logistics / Comms):** {sitrep_data['target_summary']['logistic_p3_count']}\n\n")
+                f.write(f"---\n\n")
+                f.write(f"## 2. Georeferenced Target Inventory\n\n")
+                f.write(f"| ID | Priority | Tactical Classification | Local NED (X, Y) | GPS WGS84 (Lat, Lon) | 1-Sigma (±m) | Observations | Recommended Action |\n")
+                f.write(f"| :---: | :---: | :--- | :---: | :---: | :---: | :---: | :--- |\n")
+                for t in targets:
+                    lat, lon = t.wgs84_coords
+                    f.write(f"| #{t.target_id:02d} | `{getattr(t, 'priority', 'P2')}` | **{getattr(t, 'triage_name', t.display_name)}** | `({t.x:+.2f}, {t.y:+.2f})` | `{lat:.6f}°, {lon:.6f}°` | `±{t.pos_std_dev:.2f}` | {t.observations} | {getattr(t, 'action', 'Verify')} |\n")
+                f.write(f"\n---\n\n")
+                f.write(f"## 3. Optical Photographic Vignettes\n\n")
+                for t in targets:
+                    crop_name = os.path.basename(getattr(t, "crop_path", ""))
+                    if crop_name:
+                        f.write(f"### Contact #{t.target_id:02d}: {getattr(t, 'triage_name', t.display_name)} ({getattr(t, 'priority', '')})\n")
+                        f.write(f"![Contact #{t.target_id}]({crop_name})\n\n")
+                        f.write(f"- **Action Required:** {getattr(t, 'action', '')}\n")
+                        f.write(f"- **Coordinates:** Local NED `({t.x:+.2f}m, {t.y:+.2f}m)` | 1-Sigma: `±{t.pos_std_dev:.2f}m`\n\n")
+            print(f"[SITREP] Markdown report written to: {md_path}", flush=True)
+        except Exception as e:
+            print(f"[SITREP] Failed to write Markdown report: {e}", flush=True)
+
     def _print_final_report(self):
         confirmed = self.detector.get_confirmed_targets()
         print("\n" + "="*78)
@@ -505,23 +627,24 @@ class SurveyMission:
         print(f"Survey Area Covered:   120.0m (Length) x 90.0m (Width) = 10,800 m^2")
         print(f"Swath Configuration:   5 Target-Aligned Lanes @ 18.0m spacing (12m altitude)")
         print(f"Turn Trajectory:       Continuous Coordinated Dubins Arcs (R = 9.0m, Bank < 8.3 deg)")
-        print(f"Flight Cruise Speed:   {self.survey_speed} m/s")
-        print(f"Camera Optical Offset: [+0.18, 0, -0.242]m lever-arm + Z=-0.55m elevation")
-        print(f"Shape Classification:  CUBES ONLY (Spheres, Cylinders & Barriers Rejected)")
-        print(f"Total Unique Targets:  {len(confirmed)} confirmed cubes")
+        print(f"Flight Cruise Speed:   {self.survey_speed} m/s | Constant 12.0m AGL (Terrain-Following)")
+        print(f"Camera Optical Offset: [+0.18, 0, -0.242]m lever-arm + DEM elevation intersect")
+        print(f"Total Unique Targets:  {len(confirmed)} confirmed contacts")
         print("-" * 78)
-        print(f"{'ID':<4} | {'Target Box Type':<20} | {'Estimated Ground NED':<24} | {'Uncertainty':<12} | {'Hits':<6}")
+        print(f"{'ID':<4} | {'Priority':<14} | {'Tactical Classification':<25} | {'Ground NED':<20} | {'Uncertainty':<12} | {'Hits':<6}")
         print("-" * 78)
 
         for t in confirmed:
-            pos_str = f"({t.x:+.2f}m, {t.y:+.2f}m, 0.0m)"
+            pri = getattr(t, "priority", "P2 - HIGH")
+            t_name = getattr(t, "triage_name", t.display_name)
+            pos_str = f"({t.x:+.2f}m, {t.y:+.2f}m)"
             unc_str = f"+/- {t.pos_std_dev:.2f} m"
             hits_str = f"{t.observations}"
-            print(f"#{t.target_id:<3} | {t.color_name:<20} | {pos_str:<24} | {unc_str:<12} | {hits_str:<6}")
+            print(f"#{t.target_id:<3} | {pri:<14} | {t_name:<25} | {pos_str:<20} | {unc_str:<12} | {hits_str:<6}")
 
         print("=" * 78)
-        print(f"Target snapshots saved to: {self.detector.output_dir}/\n")
-        print(f"Full mission recording saved to: {self.detector.video_path}\n")
+        print(f"Target snapshots & vignettes: {self.detector.output_dir}/")
+        print(f"Full mission recording saved: {self.detector.video_path}\n")
 
 
 def main():
