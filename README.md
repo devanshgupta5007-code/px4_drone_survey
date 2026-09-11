@@ -137,7 +137,17 @@ A responsive, high-contrast tactical GCS engineered in Python Tkinter adhering t
 - **Glass-Cockpit Telemetry Ribbon:** 6 primary avionics instruments displaying Altitude (AGL), Groundspeed, Heading (Yaw with Cardinal indicator), Attitude Stability (Pitch/Roll monitoring), NED Coordinates, and Swath Progress pips (`[■■□□□]`).
 - **Live Optical Viewport:** Real-time 30 FPS camera feed with boresight HUD, horizon pitch lines, and georeferenced target bounding boxes.
 - **Photogrammetric Ground Coverage Heatmap:** As the drone flies, the 4-corner ground projection of the optical field of view is accumulated in real time into an aggregated coverage swath on the 2D map, providing visual proof of $100\%$ proving ground coverage.
-- **2D Tactical Canvas:** Dynamic world-to-canvas coordinate mapping supporting interactive pan (`Mouse Drag`), zoom (`Mouse Wheel` / `[-]`/`[+]`), and automated UAV tracking (`[FOLLOW]`). Renders topographic contours, ISO shipping containers, rubble collapse zones, photogrammetric GCPs, planned swaths, Dubins arcs, dual-tone flight breadcrumbs, and confirmed target badges with 1-sigma uncertainty circles.
+- **2D Tactical Canvas:** Dynamic world-to-canvas coordinate mapping supporting interactive pan (`Mouse Drag`), zoom (`Mouse Wheel` / `[-]`/`[+]`), and automated UAV tracking (`[FOLLOW]`). Renders:
+  - Topographic contour rings for Northwest knoll (+0.65m) and Central-East ridge (+0.68m) with vegetation scatter
+  - 2-story collapsed concrete building (95N, 30E) with standing wall shadows and fractured roof slab
+  - Forward Operating Base (FOB) staging tent (8N, -12E) with guy lines and logistics hub
+  - Parked utility flatbed truck (12N, -20E) with cab, bed, and cast shadows
+  - Disaster debris zones (72N, 15E and 25N, -18E) with scattered masonry fragments and protruding rebar
+  - Sandbag defensive emplacements (90N, 26E) and damaged free-standing wall sections (65N, 20E)
+  - Industrial ISO 20ft shipping containers with corrugated roof ribs and cast shadows
+  - Standing mud puddles with specular highlights and vehicle tire rut tracks connecting staging compounds
+  - High-visibility photogrammetric GCP checkerboards and aviation boundary markers
+  - Planned survey swaths, Dubins arcs, dual-tone flight breadcrumbs, and priority-coded target badges (P1 diamond ◇, P2/P3 square □)
 - **Target Reconnaissance Registry:** In-place Treeview displaying target ID, Priority tag (`[P1]`, `[P2]`, `[P3]`), tactical classification, georeferenced NED coordinates, 1-sigma uncertainty ($\sigma$), observation hits, and lock status.
 - **Interactive Target Vignette & Analysis Modal:** Double-clicking any contact row in the registry opens a centered tactical inspection window with a $240 \times 240$ cropped optical vignette, WGS84 GPS coordinates, triage priority, and operational action recommendations.
 - **Automated SITREP Export:** Clicking `[SITREP]` generates standardized `MISSION_RECON_SITREP.json` and formatted Markdown `MISSION_RECON_SITREP.md` reports with embedded optical vignettes and full georeferenced inventory.
