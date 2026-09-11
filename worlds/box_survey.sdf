@@ -1,0 +1,542 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sdf version="1.9">
+  <world name="box_survey">
+    <physics type="ode">
+      <max_step_size>0.004</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+      <real_time_update_rate>250</real_time_update_rate>
+    </physics>
+    <gravity>0 0 -9.8</gravity>
+    <magnetic_field>6e-06 2.3e-05 -4.2e-05</magnetic_field>
+    <atmosphere type="adiabatic"/>
+    <scene>
+      <grid>false</grid>
+      <ambient>0.58 0.60 0.62 1</ambient>
+      <background>0.70 0.82 0.94 1</background>
+      <shadows>true</shadows>
+    </scene>
+
+    <!-- Global Terrain Plane: Natural Meadow Soil Surface -->
+    <model name="global_terrain">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>1000 1000</size>
+            </plane>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>1000 1000</size>
+            </plane>
+          </geometry>
+          <material>
+            <ambient>0.36 0.44 0.32 1</ambient>
+            <diffuse>0.40 0.48 0.35 1</diffuse>
+            <specular>0.04 0.04 0.04 1</specular>
+          </material>
+        </visual>
+      </link>
+      <pose>0 0 -0.01 0 0 0</pose>
+    </model>
+
+    <!-- ================================================================ -->
+    <!-- REAL-WORLD TACTICAL SURVEY PROVING GROUND: 120m x 90m            -->
+    <!-- PX4 NED: X in [0, 120]m (North), Y in [-45, 45]m (East)           -->
+    <!-- Gazebo ENU: Y in [0, 120]m (North), X in [-45, 45]m (East)        -->
+    <!-- ================================================================ -->
+
+    <!-- Compacted Gravel Perimeter Access Road (Surrounds Survey Arena) -->
+    <model name="perimeter_access_road">
+      <static>true</static>
+      <pose>0.0 60.0 0.001 0 0 0</pose>
+      <link name="link">
+        <visual name="road_surface">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>98.0 128.0</size>
+            </plane>
+          </geometry>
+          <material>
+            <ambient>0.44 0.40 0.34 1</ambient>
+            <diffuse>0.48 0.44 0.37 1</diffuse>
+            <specular>0.02 0.02 0.02 1</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Weathered Tarmac Survey Apron (Authentic Asphalt Proving Ground) -->
+    <model name="survey_zone_apron">
+      <static>true</static>
+      <pose>0.0 60.0 0.002 0 0 0</pose>
+      <link name="link">
+        <visual name="asphalt">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>90.0 120.0</size>
+            </plane>
+          </geometry>
+          <material>
+            <ambient>0.28 0.28 0.30 1</ambient>
+            <diffuse>0.32 0.32 0.34 1</diffuse>
+            <specular>0.08 0.08 0.08 1</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Perimeter Survey Demarcation Markings (Ground-Painted Boundary Lines) -->
+    <model name="painted_survey_perimeter">
+      <static>true</static>
+      <pose>0.0 60.0 0.003 0 0 0</pose>
+      <link name="link">
+        <!-- North line -->
+        <visual name="line_n">
+          <pose>0 60.0 0 0 0 0</pose>
+          <geometry><box><size>90.0 0.20 0.001</size></box></geometry>
+          <material><ambient>0.88 0.85 0.75 1</ambient><diffuse>0.88 0.85 0.75 1</diffuse></material>
+        </visual>
+        <!-- South line -->
+        <visual name="line_s">
+          <pose>0 -60.0 0 0 0 0</pose>
+          <geometry><box><size>90.0 0.20 0.001</size></box></geometry>
+          <material><ambient>0.88 0.85 0.75 1</ambient><diffuse>0.88 0.85 0.75 1</diffuse></material>
+        </visual>
+        <!-- East line -->
+        <visual name="line_e">
+          <pose>45.0 0 0 0 0 0</pose>
+          <geometry><box><size>0.20 120.0 0.001</size></box></geometry>
+          <material><ambient>0.88 0.85 0.75 1</ambient><diffuse>0.88 0.85 0.75 1</diffuse></material>
+        </visual>
+        <!-- West line -->
+        <visual name="line_w">
+          <pose>-45.0 0 0 0 0 0</pose>
+          <geometry><box><size>0.20 120.0 0.001</size></box></geometry>
+          <material><ambient>0.88 0.85 0.75 1</ambient><diffuse>0.88 0.85 0.75 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Photogrammetric Ground Control Points (GCP Checkered Crosses on Tarmac) -->
+    <model name="gcp_markers">
+      <static>true</static>
+      <pose>0 0 0.004 0 0 0</pose>
+      <link name="link">
+        <!-- GCP 1 at (-25, 30) -->
+        <visual name="gcp_1_base"><pose>-25.0 30.0 0 0 0 0</pose><geometry><box><size>1.4 1.4 0.001</size></box></geometry><material><ambient>0.9 0.9 0.9 1</ambient><diffuse>0.9 0.9 0.9 1</diffuse></material></visual>
+        <visual name="gcp_1_c1"><pose>-25.35 30.35 0.001 0 0 0</pose><geometry><box><size>0.7 0.7 0.001</size></box></geometry><material><ambient>0.08 0.08 0.08 1</ambient><diffuse>0.08 0.08 0.08 1</diffuse></material></visual>
+        <visual name="gcp_1_c2"><pose>-24.65 29.65 0.001 0 0 0</pose><geometry><box><size>0.7 0.7 0.001</size></box></geometry><material><ambient>0.08 0.08 0.08 1</ambient><diffuse>0.08 0.08 0.08 1</diffuse></material></visual>
+
+        <!-- GCP 2 at (25, 30) -->
+        <visual name="gcp_2_base"><pose>25.0 30.0 0 0 0 0</pose><geometry><box><size>1.4 1.4 0.001</size></box></geometry><material><ambient>0.9 0.9 0.9 1</ambient><diffuse>0.9 0.9 0.9 1</diffuse></material></visual>
+        <visual name="gcp_2_c1"><pose>24.65 30.35 0.001 0 0 0</pose><geometry><box><size>0.7 0.7 0.001</size></box></geometry><material><ambient>0.08 0.08 0.08 1</ambient><diffuse>0.08 0.08 0.08 1</diffuse></material></visual>
+        <visual name="gcp_2_c2"><pose>25.35 29.65 0.001 0 0 0</pose><geometry><box><size>0.7 0.7 0.001</size></box></geometry><material><ambient>0.08 0.08 0.08 1</ambient><diffuse>0.08 0.08 0.08 1</diffuse></material></visual>
+
+        <!-- GCP 3 at (-25, 90) -->
+        <visual name="gcp_3_base"><pose>-25.0 90.0 0 0 0 0</pose><geometry><box><size>1.4 1.4 0.001</size></box></geometry><material><ambient>0.9 0.9 0.9 1</ambient><diffuse>0.9 0.9 0.9 1</diffuse></material></visual>
+        <visual name="gcp_3_c1"><pose>-25.35 90.35 0.001 0 0 0</pose><geometry><box><size>0.7 0.7 0.001</size></box></geometry><material><ambient>0.08 0.08 0.08 1</ambient><diffuse>0.08 0.08 0.08 1</diffuse></material></visual>
+        <visual name="gcp_3_c2"><pose>-24.65 89.65 0.001 0 0 0</pose><geometry><box><size>0.7 0.7 0.001</size></box></geometry><material><ambient>0.08 0.08 0.08 1</ambient><diffuse>0.08 0.08 0.08 1</diffuse></material></visual>
+
+        <!-- GCP 4 at (25, 90) -->
+        <visual name="gcp_4_base"><pose>25.0 90.0 0 0 0 0</pose><geometry><box><size>1.4 1.4 0.001</size></box></geometry><material><ambient>0.9 0.9 0.9 1</ambient><diffuse>0.9 0.9 0.9 1</diffuse></material></visual>
+        <visual name="gcp_4_c1"><pose>24.65 90.35 0.001 0 0 0</pose><geometry><box><size>0.7 0.7 0.001</size></box></geometry><material><ambient>0.08 0.08 0.08 1</ambient><diffuse>0.08 0.08 0.08 1</diffuse></material></visual>
+        <visual name="gcp_4_c2"><pose>25.35 89.65 0.001 0 0 0</pose><geometry><box><size>0.7 0.7 0.001</size></box></geometry><material><ambient>0.08 0.08 0.08 1</ambient><diffuse>0.08 0.08 0.08 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- Realistic ICAO Aviation-Striped Survey Pylons (3.5m Towers with Red Warning Beacon) -->
+    <!-- Northwest Pylon (-45, 120) -->
+    <model name="survey_tower_nw">
+      <static>true</static>
+      <pose>-45.0 120.0 0 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><cylinder><radius>0.35</radius><length>3.5</length></cylinder></geometry><pose>0 0 1.75 0 0 0</pose></collision>
+        <visual name="b1"><pose>0 0 0.35 0 0 0</pose><geometry><cylinder><radius>0.30</radius><length>0.7</length></cylinder></geometry><material><ambient>0.95 0.35 0.05 1</ambient><diffuse>0.95 0.35 0.05 1</diffuse></material></visual>
+        <visual name="b2"><pose>0 0 1.05 0 0 0</pose><geometry><cylinder><radius>0.28</radius><length>0.7</length></cylinder></geometry><material><ambient>0.95 0.95 0.95 1</ambient><diffuse>0.95 0.95 0.95 1</diffuse></material></visual>
+        <visual name="b3"><pose>0 0 1.75 0 0 0</pose><geometry><cylinder><radius>0.26</radius><length>0.7</length></cylinder></geometry><material><ambient>0.95 0.35 0.05 1</ambient><diffuse>0.95 0.35 0.05 1</diffuse></material></visual>
+        <visual name="b4"><pose>0 0 2.45 0 0 0</pose><geometry><cylinder><radius>0.24</radius><length>0.7</length></cylinder></geometry><material><ambient>0.95 0.95 0.95 1</ambient><diffuse>0.95 0.95 0.95 1</diffuse></material></visual>
+        <visual name="b5"><pose>0 0 3.15 0 0 0</pose><geometry><cylinder><radius>0.22</radius><length>0.7</length></cylinder></geometry><material><ambient>0.95 0.35 0.05 1</ambient><diffuse>0.95 0.35 0.05 1</diffuse></material></visual>
+        <visual name="beacon"><pose>0 0 3.55 0 0 0</pose><geometry><sphere><radius>0.12</radius></sphere></geometry><material><ambient>0.9 0.05 0.05 1</ambient><diffuse>0.9 0.05 0.05 1</diffuse><emissive>0.7 0.05 0.05 1</emissive></material></visual>
+      </link>
+    </model>
+
+    <!-- Northeast Pylon (45, 120) -->
+    <model name="survey_tower_ne">
+      <static>true</static>
+      <pose>45.0 120.0 0 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><cylinder><radius>0.35</radius><length>3.5</length></cylinder></geometry><pose>0 0 1.75 0 0 0</pose></collision>
+        <visual name="b1"><pose>0 0 0.35 0 0 0</pose><geometry><cylinder><radius>0.30</radius><length>0.7</length></cylinder></geometry><material><ambient>0.95 0.35 0.05 1</ambient><diffuse>0.95 0.35 0.05 1</diffuse></material></visual>
+        <visual name="b2"><pose>0 0 1.05 0 0 0</pose><geometry><cylinder><radius>0.28</radius><length>0.7</length></cylinder></geometry><material><ambient>0.95 0.95 0.95 1</ambient><diffuse>0.95 0.95 0.95 1</diffuse></material></visual>
+        <visual name="b3"><pose>0 0 1.75 0 0 0</pose><geometry><cylinder><radius>0.26</radius><length>0.7</length></cylinder></geometry><material><ambient>0.95 0.35 0.05 1</ambient><diffuse>0.95 0.35 0.05 1</diffuse></material></visual>
+        <visual name="b4"><pose>0 0 2.45 0 0 0</pose><geometry><cylinder><radius>0.24</radius><length>0.7</length></cylinder></geometry><material><ambient>0.95 0.95 0.95 1</ambient><diffuse>0.95 0.95 0.95 1</diffuse></material></visual>
+        <visual name="b5"><pose>0 0 3.15 0 0 0</pose><geometry><cylinder><radius>0.22</radius><length>0.7</length></cylinder></geometry><material><ambient>0.95 0.35 0.05 1</ambient><diffuse>0.95 0.35 0.05 1</diffuse></material></visual>
+        <visual name="beacon"><pose>0 0 3.55 0 0 0</pose><geometry><sphere><radius>0.12</radius></sphere></geometry><material><ambient>0.9 0.05 0.05 1</ambient><diffuse>0.9 0.05 0.05 1</diffuse><emissive>0.7 0.05 0.05 1</emissive></material></visual>
+      </link>
+    </model>
+
+    <!-- Southeast Pylon (45, 0) -->
+    <model name="survey_tower_se">
+      <static>true</static>
+      <pose>45.0 0.0 0 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><cylinder><radius>0.35</radius><length>3.5</length></cylinder></geometry><pose>0 0 1.75 0 0 0</pose></collision>
+        <visual name="b1"><pose>0 0 0.35 0 0 0</pose><geometry><cylinder><radius>0.30</radius><length>0.7</length></cylinder></geometry><material><ambient>0.95 0.35 0.05 1</ambient><diffuse>0.95 0.35 0.05 1</diffuse></material></visual>
+        <visual name="b2"><pose>0 0 1.05 0 0 0</pose><geometry><cylinder><radius>0.28</radius><length>0.7</length></cylinder></geometry><material><ambient>0.95 0.95 0.95 1</ambient><diffuse>0.95 0.95 0.95 1</diffuse></material></visual>
+        <visual name="b3"><pose>0 0 1.75 0 0 0</pose><geometry><cylinder><radius>0.26</radius><length>0.7</length></cylinder></geometry><material><ambient>0.95 0.35 0.05 1</ambient><diffuse>0.95 0.35 0.05 1</diffuse></material></visual>
+        <visual name="b4"><pose>0 0 2.45 0 0 0</pose><geometry><cylinder><radius>0.24</radius><length>0.7</length></cylinder></geometry><material><ambient>0.95 0.95 0.95 1</ambient><diffuse>0.95 0.95 0.95 1</diffuse></material></visual>
+        <visual name="b5"><pose>0 0 3.15 0 0 0</pose><geometry><cylinder><radius>0.22</radius><length>0.7</length></cylinder></geometry><material><ambient>0.95 0.35 0.05 1</ambient><diffuse>0.95 0.35 0.05 1</diffuse></material></visual>
+        <visual name="beacon"><pose>0 0 3.55 0 0 0</pose><geometry><sphere><radius>0.12</radius></sphere></geometry><material><ambient>0.9 0.05 0.05 1</ambient><diffuse>0.9 0.05 0.05 1</diffuse><emissive>0.7 0.05 0.05 1</emissive></material></visual>
+      </link>
+    </model>
+
+    <!-- Southwest Pylon (-45, 0) -->
+    <model name="survey_tower_sw">
+      <static>true</static>
+      <pose>-45.0 0.0 0 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><cylinder><radius>0.35</radius><length>3.5</length></cylinder></geometry><pose>0 0 1.75 0 0 0</pose></collision>
+        <visual name="b1"><pose>0 0 0.35 0 0 0</pose><geometry><cylinder><radius>0.30</radius><length>0.7</length></cylinder></geometry><material><ambient>0.95 0.35 0.05 1</ambient><diffuse>0.95 0.35 0.05 1</diffuse></material></visual>
+        <visual name="b2"><pose>0 0 1.05 0 0 0</pose><geometry><cylinder><radius>0.28</radius><length>0.7</length></cylinder></geometry><material><ambient>0.95 0.95 0.95 1</ambient><diffuse>0.95 0.95 0.95 1</diffuse></material></visual>
+        <visual name="b3"><pose>0 0 1.75 0 0 0</pose><geometry><cylinder><radius>0.26</radius><length>0.7</length></cylinder></geometry><material><ambient>0.95 0.35 0.05 1</ambient><diffuse>0.95 0.35 0.05 1</diffuse></material></visual>
+        <visual name="b4"><pose>0 0 2.45 0 0 0</pose><geometry><cylinder><radius>0.24</radius><length>0.7</length></cylinder></geometry><material><ambient>0.95 0.95 0.95 1</ambient><diffuse>0.95 0.95 0.95 1</diffuse></material></visual>
+        <visual name="b5"><pose>0 0 3.15 0 0 0</pose><geometry><cylinder><radius>0.22</radius><length>0.7</length></cylinder></geometry><material><ambient>0.95 0.35 0.05 1</ambient><diffuse>0.95 0.35 0.05 1</diffuse></material></visual>
+        <visual name="beacon"><pose>0 0 3.55 0 0 0</pose><geometry><sphere><radius>0.12</radius></sphere></geometry><material><ambient>0.9 0.05 0.05 1</ambient><diffuse>0.9 0.05 0.05 1</diffuse><emissive>0.7 0.05 0.05 1</emissive></material></visual>
+      </link>
+    </model>
+
+    <!-- Operational Helipad Launch Complex at (0, 0) -->
+    <model name="helipad_complex">
+      <static>true</static>
+      <pose>0.0 0.0 0.003 0 0 0</pose>
+      <link name="link">
+        <!-- Octagonal landing pad border -->
+        <visual name="pad_surface">
+          <geometry><cylinder><radius>4.0</radius><length>0.005</length></cylinder></geometry>
+          <material><ambient>0.22 0.24 0.28 1</ambient><diffuse>0.25 0.28 0.32 1</diffuse></material>
+        </visual>
+        <!-- White Ring Marking -->
+        <visual name="white_ring">
+          <pose>0 0 0.003 0 0 0</pose>
+          <geometry><cylinder><radius>3.2</radius><length>0.002</length></cylinder></geometry>
+          <material><ambient>0.92 0.92 0.92 1</ambient><diffuse>0.92 0.92 0.92 1</diffuse></material>
+        </visual>
+        <visual name="inner_pad">
+          <pose>0 0 0.004 0 0 0</pose>
+          <geometry><cylinder><radius>2.9</radius><length>0.002</length></cylinder></geometry>
+          <material><ambient>0.22 0.24 0.28 1</ambient><diffuse>0.25 0.28 0.32 1</diffuse></material>
+        </visual>
+        <!-- Bold White "H" Marking -->
+        <visual name="h_bar_left"><pose>-0.6 0 0.005 0 0 0</pose><geometry><box><size>0.28 1.6 0.002</size></box></geometry><material><ambient>0.95 0.95 0.95 1</ambient><diffuse>0.95 0.95 0.95 1</diffuse></material></visual>
+        <visual name="h_bar_right"><pose>0.6 0 0.005 0 0 0</pose><geometry><box><size>0.28 1.6 0.002</size></box></geometry><material><ambient>0.95 0.95 0.95 1</ambient><diffuse>0.95 0.95 0.95 1</diffuse></material></visual>
+        <visual name="h_bar_cross"><pose>0 0 0.005 0 0 0</pose><geometry><box><size>1.2 0.28 0.002</size></box></geometry><material><ambient>0.95 0.95 0.95 1</ambient><diffuse>0.95 0.95 0.95 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- Field Weather Station & Anemometer Mast near Launch Pad -->
+    <model name="weather_mast">
+      <static>true</static>
+      <pose>-6.0 -4.0 0 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><geometry><cylinder><radius>0.08</radius><length>2.8</length></cylinder></geometry><pose>0 0 1.4 0 0 0</pose></collision>
+        <visual name="pole"><pose>0 0 1.4 0 0 0</pose><geometry><cylinder><radius>0.05</radius><length>2.8</length></cylinder></geometry><material><ambient>0.75 0.78 0.82 1</ambient><diffuse>0.75 0.78 0.82 1</diffuse></material></visual>
+        <visual name="sensor_box"><pose>0 0 2.2 0 0 0</pose><geometry><box><size>0.3 0.25 0.4</size></box></geometry><material><ambient>0.85 0.85 0.85 1</ambient><diffuse>0.85 0.85 0.85 1</diffuse></material></visual>
+        <visual name="wind_sock"><pose>0 0 2.8 0 0 0</pose><geometry><cylinder><radius>0.15</radius><length>0.6</length></cylinder></geometry><material><ambient>0.95 0.35 0.05 1</ambient><diffuse>0.95 0.35 0.05 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- ================================================================ -->
+    <!-- REALISTIC NATURAL TERRAIN: CONTOURED HILLS, BERMS & BOULDERS     -->
+    <!-- ================================================================ -->
+
+    <!-- Natural Rolling Knoll (North-West Terraced Contoured Elevation +0.6m) -->
+    <model name="natural_knoll_nw">
+      <static>true</static>
+      <pose>-25.0 85.0 0 0 0 0.35</pose>
+      <link name="link">
+        <!-- Tier 1: Gentle Base Slope (+0.22m) -->
+        <collision name="col_t1"><pose>0 0 0.11 0 0 0</pose><geometry><box><size>22.0 16.0 0.22</size></box></geometry></collision>
+        <visual name="vis_t1"><pose>0 0 0.11 0 0 0</pose><geometry><box><size>22.0 16.0 0.22</size></box></geometry><material><ambient>0.38 0.46 0.34 1</ambient><diffuse>0.42 0.50 0.38 1</diffuse></material></visual>
+        <!-- Tier 2: Mid Elevation (+0.44m) -->
+        <collision name="col_t2"><pose>0 0 0.33 0 0 0</pose><geometry><box><size>15.0 11.0 0.22</size></box></geometry></collision>
+        <visual name="vis_t2"><pose>0 0 0.33 0 0 0</pose><geometry><box><size>15.0 11.0 0.22</size></box></geometry><material><ambient>0.40 0.48 0.36 1</ambient><diffuse>0.44 0.52 0.40 1</diffuse></material></visual>
+        <!-- Tier 3: Summit Crest (+0.65m) -->
+        <collision name="col_t3"><pose>0 0 0.55 0 0 0</pose><geometry><box><size>9.0 6.5 0.22</size></box></geometry></collision>
+        <visual name="vis_t3"><pose>0 0 0.55 0 0 0</pose><geometry><box><size>9.0 6.5 0.22</size></box></geometry><material><ambient>0.42 0.50 0.38 1</ambient><diffuse>0.46 0.54 0.42 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- Natural Ridge (Central-East Elongated Elevation +0.7m) -->
+    <model name="natural_ridge_ce">
+      <static>true</static>
+      <pose>22.0 42.0 0 0 0 -0.25</pose>
+      <link name="link">
+        <!-- Base Ridge Tier (+0.30m) -->
+        <collision name="col_r1"><pose>0 0 0.15 0 0 0</pose><geometry><box><size>16.0 22.0 0.30</size></box></geometry></collision>
+        <visual name="vis_r1"><pose>0 0 0.15 0 0 0</pose><geometry><box><size>16.0 22.0 0.30</size></box></geometry><material><ambient>0.40 0.47 0.36 1</ambient><diffuse>0.44 0.51 0.40 1</diffuse></material></visual>
+        <!-- Spine Ridge Tier (+0.68m) -->
+        <collision name="col_r2"><pose>0 0 0.45 0 0 0</pose><geometry><box><size>10.0 15.0 0.30</size></box></geometry></collision>
+        <visual name="vis_r2"><pose>0 0 0.45 0 0 0</pose><geometry><box><size>10.0 15.0 0.30</size></box></geometry><material><ambient>0.43 0.50 0.39 1</ambient><diffuse>0.47 0.54 0.43 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- Natural Rocky Outcrop Clusters (Irregular Multi-Stone Formations) -->
+    <model name="rock_outcrop_alpha">
+      <static>true</static>
+      <pose>-12.0 52.0 0 0 0 0.6</pose>
+      <link name="link">
+        <collision name="c1"><pose>0 0 0.4 0 0 0</pose><geometry><box><size>1.6 1.3 0.8</size></box></geometry></collision>
+        <visual name="v1"><pose>0 0 0.4 0.1 0.15 0</pose><geometry><box><size>1.6 1.3 0.8</size></box></geometry><material><ambient>0.32 0.33 0.35 1</ambient><diffuse>0.36 0.37 0.39 1</diffuse></material></visual>
+        <visual name="v2"><pose>0.8 0.6 0.25 -0.1 0.2 0.4</pose><geometry><box><size>1.1 0.9 0.5</size></box></geometry><material><ambient>0.28 0.29 0.31 1</ambient><diffuse>0.32 0.33 0.35 1</diffuse></material></visual>
+        <visual name="v3"><pose>-0.7 -0.5 0.3 0.2 -0.1 -0.3</pose><geometry><box><size>1.2 1.0 0.6</size></box></geometry><material><ambient>0.30 0.31 0.33 1</ambient><diffuse>0.34 0.35 0.37 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <model name="rock_outcrop_beta">
+      <static>true</static>
+      <pose>28.0 92.0 0 0 0 -0.4</pose>
+      <link name="link">
+        <collision name="c1"><pose>0 0 0.5 0 0 0</pose><geometry><box><size>1.8 1.4 1.0</size></box></geometry></collision>
+        <visual name="v1"><pose>0 0 0.5 -0.15 0.1 0</pose><geometry><box><size>1.8 1.4 1.0</size></box></geometry><material><ambient>0.33 0.34 0.36 1</ambient><diffuse>0.37 0.38 0.40 1</diffuse></material></visual>
+        <visual name="v2"><pose>0.9 -0.5 0.35 0.15 -0.1 0.5</pose><geometry><box><size>1.2 1.1 0.7</size></box></geometry><material><ambient>0.29 0.30 0.32 1</ambient><diffuse>0.33 0.34 0.36 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- Concrete Jersey Barriers Between Flight Lanes -->
+    <model name="jersey_barrier_1">
+      <static>true</static>
+      <pose>-9.0 70.0 0 0 0 0.18</pose>
+      <link name="link">
+        <collision name="col"><pose>0 0 0.45 0 0 0</pose><geometry><box><size>0.6 6.0 0.9</size></box></geometry></collision>
+        <visual name="vis"><pose>0 0 0.45 0 0 0</pose><geometry><box><size>0.6 6.0 0.9</size></box></geometry><material><ambient>0.52 0.52 0.50 1</ambient><diffuse>0.56 0.56 0.54 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <model name="jersey_barrier_2">
+      <static>true</static>
+      <pose>9.0 32.0 0 0 0 -0.12</pose>
+      <link name="link">
+        <collision name="col"><pose>0 0 0.45 0 0 0</pose><geometry><box><size>0.6 5.5 0.9</size></box></geometry></collision>
+        <visual name="vis"><pose>0 0 0.45 0 0 0</pose><geometry><box><size>0.6 5.5 0.9</size></box></geometry><material><ambient>0.50 0.50 0.48 1</ambient><diffuse>0.54 0.54 0.52 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <model name="jersey_barrier_3">
+      <static>true</static>
+      <pose>27.0 68.0 0 0 0 0.35</pose>
+      <link name="link">
+        <collision name="col"><pose>0 0 0.45 0 0 0</pose><geometry><box><size>0.6 5.0 0.9</size></box></geometry></collision>
+        <visual name="vis"><pose>0 0 0.45 0 0 0</pose><geometry><box><size>0.6 5.0 0.9</size></box></geometry><material><ambient>0.53 0.53 0.51 1</ambient><diffuse>0.57 0.57 0.55 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- ================================================================ -->
+    <!-- 7 HIGH-FIDELITY TARGET CARGO CUBES DISPERSED IN ARENA            -->
+    <!-- Testing Edge-of-View, Lateral Flanks, Boundaries & Terrain       -->
+    <!-- Gazebo ENU: X_gz = Y_ned (East), Y_gz = X_ned (North)            -->
+    <!-- ================================================================ -->
+
+    <!-- TARGET 1: Red Cargo Crate - Far-West Perimeter Edge (X_ned=28.0, Y_ned=-42.5) -->
+    <!-- Tests outer-left camera edge on Lane 1 -->
+    <model name="target_cube_red">
+      <static>true</static>
+      <pose>-42.5 28.0 0 0 0 0.25</pose>
+      <link name="link">
+        <collision name="col"><pose>0 0 0.6 0 0 0</pose><geometry><box><size>1.5 1.5 1.2</size></box></geometry></collision>
+        <visual name="skid_left"><pose>-0.55 0 0.06 0 0 0</pose><geometry><box><size>0.15 1.5 0.12</size></box></geometry><material><ambient>0.15 0.15 0.15 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material></visual>
+        <visual name="skid_right"><pose>0.55 0 0.06 0 0 0</pose><geometry><box><size>0.15 1.5 0.12</size></box></geometry><material><ambient>0.15 0.15 0.15 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material></visual>
+        <visual name="body"><pose>0 0 0.64 0 0 0</pose><geometry><box><size>1.46 1.46 1.04</size></box></geometry><material><ambient>0.88 0.10 0.10 1</ambient><diffuse>0.92 0.12 0.12 1</diffuse><specular>0.3 0.3 0.3 1</specular></material></visual>
+        <visual name="lid_trim"><pose>0 0 1.17 0 0 0</pose><geometry><box><size>1.50 1.50 0.04</size></box></geometry><material><ambient>0.18 0.18 0.18 1</ambient><diffuse>0.18 0.18 0.18 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- TARGET 2: Yellow Hazard Crate - NW Knoll Tier 2 Summit (X_ned=86.0, Y_ned=-24.0, Z_ned=-0.44m) -->
+    <!-- Tests elevated terrain target and inter-swath viewing -->
+    <model name="target_cube_yellow">
+      <static>true</static>
+      <pose>-24.0 86.0 0.44 0 0 -0.35</pose>
+      <link name="link">
+        <collision name="col"><pose>0 0 0.65 0 0 0</pose><geometry><box><size>1.6 1.6 1.3</size></box></geometry></collision>
+        <visual name="skid_left"><pose>-0.6 0 0.06 0 0 0</pose><geometry><box><size>0.15 1.6 0.12</size></box></geometry><material><ambient>0.15 0.15 0.15 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material></visual>
+        <visual name="skid_right"><pose>0.6 0 0.06 0 0 0</pose><geometry><box><size>0.15 1.6 0.12</size></box></geometry><material><ambient>0.15 0.15 0.15 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material></visual>
+        <visual name="body"><pose>0 0 0.70 0 0 0</pose><geometry><box><size>1.54 1.54 1.16</size></box></geometry><material><ambient>0.92 0.85 0.06 1</ambient><diffuse>0.95 0.88 0.08 1</diffuse><specular>0.3 0.3 0.3 1</specular></material></visual>
+        <visual name="lid_trim"><pose>0 0 1.29 0 0 0</pose><geometry><box><size>1.60 1.60 0.04</size></box></geometry><material><ambient>0.18 0.18 0.18 1</ambient><diffuse>0.18 0.18 0.18 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- TARGET 3: Green Storage Crate - Inter-Swath Flank (X_ned=56.0, Y_ned=-6.0) -->
+    <!-- Tests lateral flank camera coverage between Lane 2 & Lane 3 -->
+    <model name="target_cube_green">
+      <static>true</static>
+      <pose>-6.0 56.0 0 0 0 0.15</pose>
+      <link name="link">
+        <collision name="col"><pose>0 0 0.65 0 0 0</pose><geometry><box><size>1.6 1.5 1.3</size></box></geometry></collision>
+        <visual name="skid_left"><pose>-0.6 0 0.06 0 0 0</pose><geometry><box><size>0.15 1.5 0.12</size></box></geometry><material><ambient>0.15 0.15 0.15 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material></visual>
+        <visual name="skid_right"><pose>0.6 0 0.06 0 0 0</pose><geometry><box><size>0.15 1.5 0.12</size></box></geometry><material><ambient>0.15 0.15 0.15 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material></visual>
+        <visual name="body"><pose>0 0 0.70 0 0 0</pose><geometry><box><size>1.54 1.44 1.16</size></box></geometry><material><ambient>0.06 0.78 0.16 1</ambient><diffuse>0.08 0.82 0.18 1</diffuse><specular>0.3 0.3 0.3 1</specular></material></visual>
+        <visual name="lid_trim"><pose>0 0 1.29 0 0 0</pose><geometry><box><size>1.60 1.50 0.04</size></box></geometry><material><ambient>0.18 0.18 0.18 1</ambient><diffuse>0.18 0.18 0.18 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- TARGET 4: Orange Aid Crate - Southern Sector Approach (X_ned=18.0, Y_ned=8.0) -->
+    <!-- Tests lower swath boundary transition between Lane 3 & Lane 4 -->
+    <model name="target_cube_orange">
+      <static>true</static>
+      <pose>8.0 18.0 0 0 0 -0.2</pose>
+      <link name="link">
+        <collision name="col"><pose>0 0 0.6 0 0 0</pose><geometry><box><size>1.5 1.5 1.2</size></box></geometry></collision>
+        <visual name="skid_left"><pose>-0.55 0 0.06 0 0 0</pose><geometry><box><size>0.15 1.5 0.12</size></box></geometry><material><ambient>0.15 0.15 0.15 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material></visual>
+        <visual name="skid_right"><pose>0.55 0 0.06 0 0 0</pose><geometry><box><size>0.15 1.5 0.12</size></box></geometry><material><ambient>0.15 0.15 0.15 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material></visual>
+        <visual name="body"><pose>0 0 0.64 0 0 0</pose><geometry><box><size>1.46 1.46 1.04</size></box></geometry><material><ambient>0.95 0.42 0.04 1</ambient><diffuse>0.98 0.45 0.05 1</diffuse><specular>0.3 0.3 0.3 1</specular></material></visual>
+        <visual name="lid_trim"><pose>0 0 1.17 0 0 0</pose><geometry><box><size>1.50 1.50 0.04</size></box></geometry><material><ambient>0.18 0.18 0.18 1</ambient><diffuse>0.18 0.18 0.18 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- TARGET 5: Blue Supply Crate - CE Natural Ridge Flank (X_ned=44.0, Y_ned=24.0, Z_ned=-0.30m) -->
+    <!-- Tests elevated ridge plateau detection between Lane 4 & Lane 5 -->
+    <model name="target_cube_blue">
+      <static>true</static>
+      <pose>24.0 44.0 0.30 0 0 0.30</pose>
+      <link name="link">
+        <collision name="col"><pose>0 0 0.6 0 0 0</pose><geometry><box><size>1.5 1.5 1.2</size></box></geometry></collision>
+        <visual name="skid_left"><pose>-0.55 0 0.06 0 0 0</pose><geometry><box><size>0.15 1.5 0.12</size></box></geometry><material><ambient>0.15 0.15 0.15 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material></visual>
+        <visual name="skid_right"><pose>0.55 0 0.06 0 0 0</pose><geometry><box><size>0.15 1.5 0.12</size></box></geometry><material><ambient>0.15 0.15 0.15 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material></visual>
+        <visual name="body"><pose>0 0 0.64 0 0 0</pose><geometry><box><size>1.46 1.46 1.04</size></box></geometry><material><ambient>0.06 0.42 0.90 1</ambient><diffuse>0.08 0.45 0.95 1</diffuse><specular>0.3 0.3 0.3 1</specular></material></visual>
+        <visual name="lid_trim"><pose>0 0 1.17 0 0 0</pose><geometry><box><size>1.50 1.50 0.04</size></box></geometry><material><ambient>0.18 0.18 0.18 1</ambient><diffuse>0.18 0.18 0.18 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- TARGET 6: Purple Avionics Crate - Far-East Perimeter Edge (X_ned=96.0, Y_ned=42.5) -->
+    <!-- Tests outer-right camera edge on Lane 5 -->
+    <model name="target_cube_purple">
+      <static>true</static>
+      <pose>42.5 96.0 0 0 0 -0.15</pose>
+      <link name="link">
+        <collision name="col"><pose>0 0 0.6 0 0 0</pose><geometry><box><size>1.5 1.5 1.2</size></box></geometry></collision>
+        <visual name="skid_left"><pose>-0.55 0 0.06 0 0 0</pose><geometry><box><size>0.15 1.5 0.12</size></box></geometry><material><ambient>0.15 0.15 0.15 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material></visual>
+        <visual name="skid_right"><pose>0.55 0 0.06 0 0 0</pose><geometry><box><size>0.15 1.5 0.12</size></box></geometry><material><ambient>0.15 0.15 0.15 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material></visual>
+        <visual name="body"><pose>0 0 0.64 0 0 0</pose><geometry><box><size>1.46 1.46 1.04</size></box></geometry><material><ambient>0.62 0.12 0.88 1</ambient><diffuse>0.68 0.14 0.94 1</diffuse><specular>0.3 0.3 0.3 1</specular></material></visual>
+        <visual name="lid_trim"><pose>0 0 1.17 0 0 0</pose><geometry><box><size>1.50 1.50 0.04</size></box></geometry><material><ambient>0.18 0.18 0.18 1</ambient><diffuse>0.18 0.18 0.18 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- TARGET 7: Cyan Scientific Crate - Far-North Turnaround Boundary (X_ned=106.0, Y_ned=2.0) -->
+    <!-- Tests longitudinal camera edge at northern survey perimeter -->
+    <model name="target_cube_cyan">
+      <static>true</static>
+      <pose>2.0 106.0 0 0 0 0.22</pose>
+      <link name="link">
+        <collision name="col"><pose>0 0 0.6 0 0 0</pose><geometry><box><size>1.5 1.5 1.2</size></box></geometry></collision>
+        <visual name="skid_left"><pose>-0.55 0 0.06 0 0 0</pose><geometry><box><size>0.15 1.5 0.12</size></box></geometry><material><ambient>0.15 0.15 0.15 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material></visual>
+        <visual name="skid_right"><pose>0.55 0 0.06 0 0 0</pose><geometry><box><size>0.15 1.5 0.12</size></box></geometry><material><ambient>0.15 0.15 0.15 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material></visual>
+        <visual name="body"><pose>0 0 0.64 0 0 0</pose><geometry><box><size>1.46 1.46 1.04</size></box></geometry><material><ambient>0.04 0.82 0.88 1</ambient><diffuse>0.06 0.88 0.94 1</diffuse><specular>0.3 0.3 0.3 1</specular></material></visual>
+        <visual name="lid_trim"><pose>0 0 1.17 0 0 0</pose><geometry><box><size>1.50 1.50 0.04</size></box></geometry><material><ambient>0.18 0.18 0.18 1</ambient><diffuse>0.18 0.18 0.18 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- ================================================================ -->
+    <!-- REALISTIC INDUSTRIAL DISTRACTORS (STEEL DRUMS, STORAGE TANKS)    -->
+    <!-- Replaces abstract primitives with realistic industrial assets    -->
+    <!-- ================================================================ -->
+
+    <!-- Industrial Red Oil Drum in Lane 1 -->
+    <model name="industrial_red_drum">
+      <static>true</static>
+      <pose>-34.0 75.0 0 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><pose>0 0 0.55 0 0 0</pose><geometry><cylinder><radius>0.42</radius><length>1.1</length></cylinder></geometry></collision>
+        <visual name="drum_body"><pose>0 0 0.55 0 0 0</pose><geometry><cylinder><radius>0.40</radius><length>1.1</length></cylinder></geometry><material><ambient>0.88 0.12 0.12 1</ambient><diffuse>0.92 0.14 0.14 1</diffuse></material></visual>
+        <visual name="rib_top"><pose>0 0 0.85 0 0 0</pose><geometry><cylinder><radius>0.42</radius><length>0.05</length></cylinder></geometry><material><ambient>0.15 0.15 0.15 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material></visual>
+        <visual name="rib_bot"><pose>0 0 0.25 0 0 0</pose><geometry><cylinder><radius>0.42</radius><length>0.05</length></cylinder></geometry><material><ambient>0.15 0.15 0.15 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- Spherical Chemical Storage Tank in Lane 2 -->
+    <model name="chemical_storage_dome">
+      <static>true</static>
+      <pose>-16.0 42.0 0 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><pose>0 0 0.8 0 0 0</pose><geometry><sphere><radius>0.85</radius></sphere></geometry></collision>
+        <visual name="pedestal"><pose>0 0 0.15 0 0 0</pose><geometry><cylinder><radius>0.6</radius><length>0.3</length></cylinder></geometry><material><ambient>0.35 0.35 0.35 1</ambient><diffuse>0.35 0.35 0.35 1</diffuse></material></visual>
+        <visual name="sphere_tank"><pose>0 0 0.85 0 0 0</pose><geometry><sphere><radius>0.8</radius></sphere></geometry><material><ambient>0.92 0.85 0.08 1</ambient><diffuse>0.95 0.88 0.08 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- Green Chemical Barrel in Lane 3 -->
+    <model name="chemical_green_barrel">
+      <static>true</static>
+      <pose>-2.0 68.0 0 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><pose>0 0 0.6 0 0 0</pose><geometry><cylinder><radius>0.45</radius><length>1.2</length></cylinder></geometry></collision>
+        <visual name="barrel"><pose>0 0 0.6 0 0 0</pose><geometry><cylinder><radius>0.44</radius><length>1.2</length></cylinder></geometry><material><ambient>0.08 0.78 0.16 1</ambient><diffuse>0.08 0.82 0.18 1</diffuse></material></visual>
+        <visual name="lid"><pose>0 0 1.21 0 0 0</pose><geometry><cylinder><radius>0.46</radius><length>0.02</length></cylinder></geometry><material><ambient>0.15 0.15 0.15 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- Orange Highway Marker Pylon in Lane 4 -->
+    <model name="marker_orange_pylon">
+      <static>true</static>
+      <pose>20.0 78.0 0 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><pose>0 0 0.5 0 0 0</pose><geometry><cylinder><radius>0.4</radius><length>1.0</length></cylinder></geometry></collision>
+        <visual name="cone_base"><pose>0 0 0.05 0 0 0</pose><geometry><box><size>0.8 0.8 0.1</size></box></geometry><material><ambient>0.2 0.2 0.2 1</ambient><diffuse>0.2 0.2 0.2 1</diffuse></material></visual>
+        <visual name="cone_body"><pose>0 0 0.55 0 0 0</pose><geometry><cylinder><radius>0.35</radius><length>0.9</length></cylinder></geometry><material><ambient>0.95 0.42 0.04 1</ambient><diffuse>0.98 0.45 0.05 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- Blue Pressurized Water Vessel in Lane 5 -->
+    <model name="pressurized_water_vessel">
+      <static>true</static>
+      <pose>34.0 48.0 0 0 0 0</pose>
+      <link name="link">
+        <collision name="col"><pose>0 0 0.8 0 0 0</pose><geometry><sphere><radius>0.8</radius></sphere></geometry></collision>
+        <visual name="skid"><pose>0 0 0.12 0 0 0</pose><geometry><box><size>1.2 1.2 0.24</size></box></geometry><material><ambient>0.25 0.25 0.25 1</ambient><diffuse>0.25 0.25 0.25 1</diffuse></material></visual>
+        <visual name="vessel"><pose>0 0 0.85 0 0 0</pose><geometry><sphere><radius>0.75</radius></sphere></geometry><material><ambient>0.08 0.42 0.90 1</ambient><diffuse>0.08 0.45 0.95 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- Modular Concrete Retaining Barrier in Lane 3 -->
+    <model name="concrete_retaining_wall">
+      <static>true</static>
+      <pose>-2.0 18.0 0 0 0 0.32</pose>
+      <link name="link">
+        <collision name="col"><pose>0 0 0.45 0 0 0</pose><geometry><box><size>0.5 4.8 0.9</size></box></geometry></collision>
+        <visual name="barrier"><pose>0 0 0.45 0 0 0</pose><geometry><box><size>0.5 4.8 0.9</size></box></geometry><material><ambient>0.54 0.54 0.52 1</ambient><diffuse>0.58 0.58 0.56 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- Realistic Natural Sunlight with Directional Solar Shadows -->
+    <light name="sun_realistic" type="directional">
+      <pose>0 0 450 0 0 0</pose>
+      <cast_shadows>true</cast_shadows>
+      <intensity>1.35</intensity>
+      <direction>0.28 0.32 -0.90</direction>
+      <diffuse>1.0 0.98 0.94 1</diffuse>
+      <specular>0.35 0.35 0.35 1</specular>
+      <attenuation>
+        <range>3000</range>
+        <linear>0</linear>
+        <constant>1</constant>
+        <quadratic>0</quadratic>
+      </attenuation>
+    </light>
+
+    <!-- Real-World Spherical Coordinates for GPS / EKF2 Alignment -->
+    <spherical_coordinates>
+      <surface_model>EARTH_WGS84</surface_model>
+      <world_frame_orientation>ENU</world_frame_orientation>
+      <latitude_deg>47.397971057728974</latitude_deg>
+      <longitude_deg>8.546163739800146</longitude_deg>
+      <elevation>0</elevation>
+    </spherical_coordinates>
+
+  </world>
+</sdf>

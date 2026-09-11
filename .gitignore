@@ -1,0 +1,29 @@
+# Python bytecode & cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+
+# Simulation Recordings & Large Media
+*.mp4
+*.avi
+*.mkv
+*.webm
+
+# Environment & IDE
+.venv/
+env/
+venv/
+.idea/
+.vscode/
+*.swp
+*~
+
+# Logs & Runtime Artifacts
+*.log
+detections/survey_mission_recording.mp4
+
+# OS Files
+.DS_Store
+Thumbs.db
