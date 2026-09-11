@@ -24,6 +24,7 @@ import os
 import sys
 import math
 import time
+import random
 import tkinter as tk
 from tkinter import ttk
 from typing import Dict, List, Tuple, Optional
@@ -755,7 +756,7 @@ class TkinterGCS:
             self._draw_canvas_map(px, py, pz, yaw_deg)
 
     def _draw_canvas_map(self, px: float, py: float, pz: float, yaw_deg: float):
-        """Draws upgraded multi-tone tactical map mirroring real-world proving ground features."""
+        """Draws photorealistic overhead tactical map with organic terrain, shadows, and debris."""
         c = self.map_canvas
         cw = c.winfo_width()
         ch = c.winfo_height()
@@ -764,149 +765,245 @@ class TkinterGCS:
 
         c.delete("all")
 
-        # 1. Compacted Gravel Perimeter Access Road (Outer Proving Ground Envelope)
-        r_bl_x, r_bl_y, _ = self.world_to_canvas(-4.0, -49.0, cw, ch)
-        r_tr_x, r_tr_y, _ = self.world_to_canvas(124.0, 49.0, cw, ch)
-        c.create_rectangle(r_bl_x, r_tr_y, r_tr_x, r_bl_y, fill="#080808", outline="#181818", width=1)
+        # ── 1. Layered Ground Surface ────────────────────────────────────────
+        # Outer perimeter: compacted dirt/gravel shoulder
+        r_bl_x, r_bl_y, _ = self.world_to_canvas(-6.0, -51.0, cw, ch)
+        r_tr_x, r_tr_y, _ = self.world_to_canvas(126.0, 51.0, cw, ch)
+        c.create_rectangle(r_bl_x, r_tr_y, r_tr_x, r_bl_y, fill="#0a0908", outline="#151412", width=1)
 
-        # 2. Weathered Tarmac Survey Apron (Inner Surface)
+        # Inner survey apron: cracked asphalt
         a_bl_x, a_bl_y, _ = self.world_to_canvas(0.0, -45.0, cw, ch)
         a_tr_x, a_tr_y, _ = self.world_to_canvas(120.0, 45.0, cw, ch)
-        c.create_rectangle(a_bl_x, a_tr_y, a_tr_x, a_bl_y, fill="#030303", outline="#1c1c1c", width=1.5)
+        c.create_rectangle(a_bl_x, a_tr_y, a_tr_x, a_bl_y, fill="#050504", outline="#161514", width=1)
 
-        # 2b. Photogrammetric Ground Coverage Heatmap (Aggregated Area Surveyed)
+        # Dirt patches on apron surface (irregular worn areas)
+        dirt_patches = [
+            (15.0, -30.0, 8.0, 5.0), (45.0, -10.0, 6.0, 4.5), (80.0, 15.0, 7.0, 5.5),
+            (100.0, -35.0, 5.5, 4.0), (30.0, 32.0, 9.0, 3.5), (65.0, -40.0, 6.0, 4.0),
+            (110.0, 25.0, 5.0, 6.0), (50.0, 38.0, 7.0, 4.0), (10.0, 10.0, 4.5, 3.5),
+        ]
+        for dx, dy, rw, rh in dirt_patches:
+            dp_x, dp_y, sc = self.world_to_canvas(dx, dy, cw, ch)
+            c.create_oval(dp_x - rw * sc * 0.5, dp_y - rh * sc * 0.5,
+                          dp_x + rw * sc * 0.5, dp_y + rh * sc * 0.5,
+                          fill="#080706", outline="")
+
+        # Pavement cracks (long hairline fractures across the tarmac)
+        cracks = [
+            [(5.0, -20.0), (18.0, -22.0), (35.0, -19.0), (48.0, -21.0)],
+            [(60.0, 10.0), (72.0, 8.0), (85.0, 12.0), (98.0, 9.0), (110.0, 11.0)],
+            [(20.0, 30.0), (38.0, 28.0), (55.0, 32.0), (70.0, 29.0)],
+        ]
+        for crack in cracks:
+            pts = []
+            for cx_m, cy_m in crack:
+                cx_p, cy_p, _ = self.world_to_canvas(cx_m, cy_m, cw, ch)
+                pts.extend([cx_p, cy_p])
+            if len(pts) >= 4:
+                c.create_line(*pts, fill="#0e0d0b", width=1, smooth=True)
+
+        # ── 2. Photogrammetric Coverage Heatmap ──────────────────────────────
         for p in self.coverage_patches:
             cp1_x, cp1_y, _ = self.world_to_canvas(p[0], p[1], cw, ch)
             cp2_x, cp2_y, _ = self.world_to_canvas(p[2], p[3], cw, ch)
             cp3_x, cp3_y, _ = self.world_to_canvas(p[4], p[5], cw, ch)
             cp4_x, cp4_y, _ = self.world_to_canvas(p[6], p[7], cw, ch)
             c.create_polygon(cp1_x, cp1_y, cp2_x, cp2_y, cp3_x, cp3_y, cp4_x, cp4_y,
-                             fill="#120508", outline="")
+                             fill="#0f0407", outline="")
 
-        # 3. Coordinate Grid Lines every 20m (Neutral Dark Charcoal)
-        grid_col = "#0c0c0c"
-        tick_col = "#383838"
-
+        # ── 3. Subtle Coordinate Grid (faint, like GIS overlay) ──────────────
+        grid_col = "#0b0b0a"
+        tick_col = "#2a2a28"
         for x in range(0, 121, 20):
             p1_x, p1_y, _ = self.world_to_canvas(x, -45, cw, ch)
             p2_x, p2_y, _ = self.world_to_canvas(x, 45, cw, ch)
-            c.create_line(p1_x, p1_y, p2_x, p2_y, fill=grid_col, width=1)
-            c.create_text(p1_x - 14, p1_y, text=f"{x}N", fill=tick_col, font=("Consolas", 7))
-
+            c.create_line(p1_x, p1_y, p2_x, p2_y, fill=grid_col, width=1, dash=(1, 6))
+            c.create_text(p1_x - 14, p1_y, text=f"{x}m", fill=tick_col, font=("Consolas", 6))
         for y in range(-40, 41, 20):
             p1_x, p1_y, _ = self.world_to_canvas(0, y, cw, ch)
             p2_x, p2_y, _ = self.world_to_canvas(120, y, cw, ch)
-            c.create_line(p1_x, p1_y, p2_x, p2_y, fill=grid_col, width=1)
-            c.create_text(p1_x, p1_y + 10, text=f"{y:+d}E", fill=tick_col, font=("Consolas", 7))
+            c.create_line(p1_x, p1_y, p2_x, p2_y, fill=grid_col, width=1, dash=(1, 6))
+            c.create_text(p1_x, p1_y + 9, text=f"{y:+d}m", fill=tick_col, font=("Consolas", 6))
 
-        # 4. Photogrammetric Ground Control Points (GCP Checkered Crosses on Tarmac)
+        # ── 4. Photogrammetric Ground Control Points (survey markers) ────────
         gcps = [(-25.0, 30.0, "GCP-1"), (25.0, 30.0, "GCP-2"), (-25.0, 90.0, "GCP-3"), (25.0, 90.0, "GCP-4")]
         for g_east, g_north, g_lbl in gcps:
-            gx, gy, scale = self.world_to_canvas(g_north, g_east, cw, ch)
-            c.create_line(gx - 4, gy, gx + 4, gy, fill="#383838", width=1)
-            c.create_line(gx, gy - 4, gx, gy + 4, fill="#383838", width=1)
-            c.create_rectangle(gx - 2, gy - 2, gx + 2, gy + 2, outline="#4a4a4a", width=1)
-            c.create_text(gx + 6, gy - 6, text=g_lbl, fill="#282828", font=("Consolas", 5))
+            gx, gy, sc = self.world_to_canvas(g_north, g_east, cw, ch)
+            # Checkerboard pattern (4 quadrants)
+            sz = 3
+            c.create_rectangle(gx - sz, gy - sz, gx, gy, fill="#383838", outline="")
+            c.create_rectangle(gx, gy, gx + sz, gy + sz, fill="#383838", outline="")
+            c.create_rectangle(gx, gy - sz, gx + sz, gy, fill="#1a1a1a", outline="")
+            c.create_rectangle(gx - sz, gy, gx, gy + sz, fill="#1a1a1a", outline="")
+            c.create_text(gx + 8, gy, text=g_lbl, fill="#222220", font=("Consolas", 5), anchor="w")
 
-        # 5. Natural Contoured Terrain Features (Neutral Monotone Terraces)
-        # 5a. Northwest Rolling Knoll (Multi-Contoured Terraces: +0.22m, +0.44m, +0.65m)
-        knoll_x, knoll_y, scale = self.world_to_canvas(85.0, -25.0, cw, ch)
-        # Base terrace (+0.22m)
-        c.create_oval(knoll_x - 11.0 * scale, knoll_y - 8.0 * scale, knoll_x + 11.0 * scale, knoll_y + 8.0 * scale,
-                      fill="#080808", outline="#181818", width=1, dash=(3, 3))
-        # Mid terrace (+0.44m)
-        c.create_oval(knoll_x - 7.5 * scale, knoll_y - 5.5 * scale, knoll_x + 7.5 * scale, knoll_y + 5.5 * scale,
-                      fill="#0e0e0e", outline="#202020", width=1, dash=(2, 2))
-        # Crest terrace (+0.65m)
-        c.create_oval(knoll_x - 4.5 * scale, knoll_y - 3.2 * scale, knoll_x + 4.5 * scale, knoll_y + 3.2 * scale,
-                      fill="#141414", outline="#2a2a2a", width=1)
-        c.create_text(knoll_x, knoll_y, text="KNOLL +0.65M", fill="#555555", font=("Consolas", 6, "bold"))
+        # ── 5. Organic Terrain Features ──────────────────────────────────────
+        _, _, scale = self.world_to_canvas(60, 0, cw, ch)
 
-        # 5b. Central-East Natural Ridge (Multi-Contoured Spine: +0.30m, +0.68m)
-        ridge_x, ridge_y, _ = self.world_to_canvas(42.0, 22.0, cw, ch)
-        # Base ridge (+0.30m)
-        c.create_oval(ridge_x - 8.0 * scale, ridge_y - 11.0 * scale, ridge_x + 8.0 * scale, ridge_y + 11.0 * scale,
-                      fill="#090909", outline="#181818", width=1, dash=(3, 3))
-        # Spine ridge (+0.68m)
-        c.create_oval(ridge_x - 5.0 * scale, ridge_y - 7.5 * scale, ridge_x + 5.0 * scale, ridge_y + 7.5 * scale,
-                      fill="#121212", outline="#242424", width=1)
-        c.create_text(ridge_x, ridge_y, text="RIDGE +0.68M", fill="#555555", font=("Consolas", 6, "bold"))
+        # 5a. Northwest Knoll — irregular multi-ring contours
+        knoll_cx, knoll_cy, _ = self.world_to_canvas(85.0, -25.0, cw, ch)
+        contour_rings_knoll = [
+            (12.0, 9.0, "#070706", "#141312", (4, 4), "+0.2m"),
+            (8.5, 6.5, "#0b0a09", "#1a1917", (3, 3), "+0.4m"),
+            (5.2, 3.8, "#0f0e0c", "#222120", (2, 2), "+0.65m"),
+        ]
+        for rw, rh, fill, outline, dash, elev_lbl in contour_rings_knoll:
+            # Offset each ring slightly for organic feel
+            ox = 0.3 * scale
+            oy = -0.2 * scale
+            c.create_oval(knoll_cx - rw * scale + ox, knoll_cy - rh * scale + oy,
+                          knoll_cx + rw * scale + ox, knoll_cy + rh * scale + oy,
+                          fill=fill, outline=outline, width=1, dash=dash)
+        c.create_text(knoll_cx, knoll_cy - 2, text="+0.65", fill="#3a3a38", font=("Consolas", 6))
 
-        # 5c. Rocky Outcrop Formations (Monotone Rock Clusters Alpha & Beta)
-        for bx, by, b_lbl in [(52.0, -12.0, "ROCKS A"), (92.0, 28.0, "ROCKS B")]:
-            b_cx, b_cy, _ = self.world_to_canvas(bx, by, cw, ch)
-            c.create_polygon(b_cx - 6, b_cy - 4, b_cx + 2, b_cy - 6, b_cx + 7, b_cy + 2, b_cx + 1, b_cy + 6, b_cx - 5, b_cy + 4,
-                             fill="#151515", outline="#282828", width=1)
-            c.create_text(b_cx, b_cy - 9, text=b_lbl, fill="#404040", font=("Consolas", 5))
+        # Vegetation scatter around knoll base (small irregular dots)
+        veg_knoll = [
+            (-32, 82), (-30, 78), (-28, 88), (-20, 80), (-22, 85), (-18, 90),
+            (-35, 85), (-26, 92), (-33, 79), (-19, 83), (-27, 76),
+        ]
+        for vy, vx in veg_knoll:
+            vx_c, vy_c, _ = self.world_to_canvas(vx, vy, cw, ch)
+            c.create_oval(vx_c - 1.5, vy_c - 1.5, vx_c + 1.5, vy_c + 1.5,
+                          fill="#0d110c", outline="")
 
-        # 5d. Concrete Jersey Barriers between lanes
-        barriers = [(70.0, -9.0, "BARRIER-1"), (32.0, 9.0, "BARRIER-2"), (68.0, 27.0, "BARRIER-3")]
-        for ox, oy, o_tag in barriers:
-            oc_x, oc_y, _ = self.world_to_canvas(ox, oy, cw, ch)
+        # 5b. Central-East Ridge — elongated irregular contours
+        ridge_cx, ridge_cy, _ = self.world_to_canvas(42.0, 22.0, cw, ch)
+        contour_rings_ridge = [
+            (6.5, 12.0, "#080807", "#151413", (4, 4), "+0.3m"),
+            (4.2, 8.5, "#0c0b0a", "#1e1d1b", (2, 3), "+0.68m"),
+        ]
+        for rw, rh, fill, outline, dash, elev_lbl in contour_rings_ridge:
+            ox = -0.4 * scale
+            c.create_oval(ridge_cx - rw * scale + ox, ridge_cy - rh * scale,
+                          ridge_cx + rw * scale + ox, ridge_cy + rh * scale,
+                          fill=fill, outline=outline, width=1, dash=dash)
+        c.create_text(ridge_cx, ridge_cy - 2, text="+0.68", fill="#3a3a38", font=("Consolas", 6))
+
+        # Vegetation near ridge
+        veg_ridge = [(25, 38), (27, 45), (24, 50), (19, 42), (30, 40), (22, 47)]
+        for vx, vy in veg_ridge:
+            vx_c, vy_c, _ = self.world_to_canvas(vx, vy, cw, ch)
+            c.create_oval(vx_c - 1.5, vy_c - 1.5, vx_c + 1.5, vy_c + 1.5,
+                          fill="#0d110c", outline="")
+
+        # 5c. Rocky outcrops — irregular polygon clusters
+        rock_clusters = [
+            (52.0, -12.0, [(-7, -5), (-3, -8), (4, -6), (8, -1), (6, 5), (1, 7), (-5, 5), (-8, 1)]),
+            (92.0, 28.0, [(-6, -4), (-1, -7), (5, -5), (7, 0), (5, 6), (-2, 7), (-6, 3)]),
+        ]
+        for rx, ry, pts_raw in rock_clusters:
+            rcx, rcy, _ = self.world_to_canvas(rx, ry, cw, ch)
+            pts = []
+            for px_r, py_r in pts_raw:
+                pts.extend([rcx + px_r * 0.7, rcy + py_r * 0.7])
+            c.create_polygon(*pts, fill="#111110", outline="#1e1d1b", width=1, smooth=True)
+            # Individual rock fragments
+            for i, (px_r, py_r) in enumerate(pts_raw[::2]):
+                c.create_oval(rcx + px_r * 0.4 - 1.5, rcy + py_r * 0.4 - 1.5,
+                              rcx + px_r * 0.4 + 1.5, rcy + py_r * 0.4 + 1.5,
+                              fill="#171716", outline="#252523")
+
+        # 5d. Concrete Jersey barriers (trapezoidal cross-section shadow)
+        barriers = [(70.0, -9.0), (32.0, 9.0), (68.0, 27.0)]
+        for bx, by in barriers:
+            bcx, bcy, _ = self.world_to_canvas(bx, by, cw, ch)
             bw = 0.8 * scale
             bh = 2.8 * scale
-            c.create_rectangle(oc_x - bw, oc_y - bh, oc_x + bw, oc_y + bh,
-                               fill="#181818", outline="#2e2e2e", width=1)
-            c.create_text(oc_x, oc_y, text=o_tag, fill="#505050", font=("Consolas", 5))
+            # Shadow cast (offset southeast)
+            c.create_rectangle(bcx - bw + 1.5, bcy - bh + 1.5, bcx + bw + 1.5, bcy + bh + 1.5,
+                               fill="#030302", outline="")
+            # Barrier body
+            c.create_rectangle(bcx - bw, bcy - bh, bcx + bw, bcy + bh,
+                               fill="#161615", outline="#282826", width=1)
 
-        # 5e. Industrial ISO 20ft Shipping Containers (West & East Zones)
-        containers = [(78.0, -18.0, "ISO 20FT [WEST]"), (38.0, 18.0, "ISO 20FT [EAST]")]
-        for cx_m, cy_m, c_tag in containers:
-            c_cx, c_cy, scale = self.world_to_canvas(cx_m, cy_m, cw, ch)
-            cw_px = 1.22 * scale  # half-width = 1.22m
-            cl_px = 3.03 * scale  # half-length = 3.03m
-            c.create_rectangle(c_cx - cw_px, c_cy - cl_px, c_cx + cw_px, c_cy + cl_px,
-                               fill="#161916", outline="#2f3b2f", width=1.5)
+        # ── 5e. ISO 20ft Shipping Containers (with cast shadow) ──────────────
+        containers = [
+            (78.0, -18.0, "#18211a", "#2a3d2c"),
+            (38.0, 18.0, "#1a1d21", "#2c313d"),
+        ]
+        for cx_m, cy_m, c_fill, c_outline in containers:
+            c_cx, c_cy, sc = self.world_to_canvas(cx_m, cy_m, cw, ch)
+            hw = 1.22 * sc  # half-width
+            hl = 3.03 * sc  # half-length
+
+            # Shadow (offset 2px SE, darker)
+            c.create_rectangle(c_cx - hw + 2, c_cy - hl + 2, c_cx + hw + 2, c_cy + hl + 2,
+                               fill="#020201", outline="")
+            # Container body
+            c.create_rectangle(c_cx - hw, c_cy - hl, c_cx + hw, c_cy + hl,
+                               fill=c_fill, outline=c_outline, width=1)
             # Corrugated roof ribs
-            for cor_i in [-2, -1, 0, 1, 2]:
-                c.create_line(c_cx - cw_px + 2, c_cy + cor_i * (cl_px / 3.0),
-                              c_cx + cw_px - 2, c_cy + cor_i * (cl_px / 3.0),
-                              fill="#222822", width=1)
-            c.create_text(c_cx, c_cy, text=c_tag, fill="#6b806b", font=("Consolas", 5, "bold"))
+            rib_count = 5
+            for i in range(rib_count):
+                ry = c_cy - hl + (2 * hl) * (i + 0.5) / rib_count
+                c.create_line(c_cx - hw + 1, ry, c_cx + hw - 1, ry, fill=c_outline, width=1)
+            # Door end marking
+            c.create_line(c_cx - hw + 2, c_cy + hl - 2, c_cx + hw - 2, c_cy + hl - 2,
+                          fill="#3a4a3c", width=1)
 
-        # 5f. Disaster Rubble & Masonry Collapse Zones
-        rubble_zones = [(60.0, 0.0, "COLLAPSE ZONE 1"), (25.0, -22.0, "COLLAPSE ZONE 2")]
-        for rx_m, ry_m, r_tag in rubble_zones:
-            r_cx, r_cy, scale = self.world_to_canvas(rx_m, ry_m, cw, ch)
-            rw_px = 3.2 * scale
-            c.create_oval(r_cx - rw_px, r_cy - rw_px * 0.7, r_cx + rw_px, r_cy + rw_px * 0.7,
-                          fill="#141312", outline="#2b2825", width=1, dash=(2, 2))
-            c.create_text(r_cx, r_cy, text=r_tag, fill="#5a5652", font=("Consolas", 5, "bold"))
+        # ── 5f. Disaster Rubble & Collapse Debris ────────────────────────────
+        rubble_zones = [(60.0, 0.0), (25.0, -22.0)]
+        for rx_m, ry_m in rubble_zones:
+            r_cx, r_cy, sc = self.world_to_canvas(rx_m, ry_m, cw, ch)
+            rw_px = 3.5 * sc
+            # Irregular rubble perimeter
+            c.create_oval(r_cx - rw_px, r_cy - rw_px * 0.65,
+                          r_cx + rw_px, r_cy + rw_px * 0.65,
+                          fill="#0e0d0b", outline="#1a1917", width=1, dash=(2, 3))
+            # Scattered rubble fragments inside
+            rng = random.Random(int(rx_m * 100 + ry_m * 10))  # deterministic per zone
+            for _ in range(12):
+                fx = r_cx + rng.uniform(-rw_px * 0.7, rw_px * 0.7)
+                fy = r_cy + rng.uniform(-rw_px * 0.45, rw_px * 0.45)
+                fs = rng.uniform(1.0, 2.5)
+                c.create_rectangle(fx - fs, fy - fs, fx + fs, fy + fs,
+                                   fill="#131210", outline="#1c1b18", width=1)
 
-        # 6. 18m Survey Swath Corridors & Turnaround Waypoints
+        # ── 5g. Tire Tracks / Vehicle Ruts ───────────────────────────────────
+        tire_tracks = [
+            [(2.0, -2.0), (15.0, -3.0), (30.0, -1.0), (45.0, -2.5), (55.0, -1.5)],
+            [(2.0, -4.0), (15.0, -5.0), (30.0, -3.0), (45.0, -4.5), (55.0, -3.5)],
+            [(65.0, 0.0), (80.0, 1.5), (95.0, 0.5), (110.0, 1.0), (118.0, 0.0)],
+            [(65.0, -2.0), (80.0, -0.5), (95.0, -1.5), (110.0, -1.0), (118.0, -2.0)],
+        ]
+        for track in tire_tracks:
+            pts = []
+            for tx_m, ty_m in track:
+                tx_c, ty_c, _ = self.world_to_canvas(tx_m, ty_m, cw, ch)
+                pts.extend([tx_c, ty_c])
+            if len(pts) >= 4:
+                c.create_line(*pts, fill="#090908", width=1.5, smooth=True)
+
+        # ── 6. Survey Swath Corridors ────────────────────────────────────────
         lane_y_coords = [-36.0, -18.0, 0.0, 18.0, 36.0]
         cur_lane_idx = (self.mission.current_lane - 1) if self.mission else 0
 
         for idx, ly in enumerate(lane_y_coords):
             sw_l_x0, sw_l_y0, _ = self.world_to_canvas(6.0, ly - 9.0, cw, ch)
             sw_r_x1, sw_r_y1, _ = self.world_to_canvas(114.0, ly + 9.0, cw, ch)
-
             if idx == cur_lane_idx and self.mission and "SURVEY" in self.mission.state.value:
-                # Active Swath Corridor: subtle dark crimson illumination
                 c.create_rectangle(sw_l_x0, sw_r_y1, sw_r_x1, sw_l_y0,
-                                   fill="#120609", outline="#2e0f17", width=1)
+                                   fill="#0e0408", outline="#220c14", width=1)
             else:
-                # Inactive Swath Corridor: faint neutral boundaries
                 c.create_rectangle(sw_l_x0, sw_r_y1, sw_r_x1, sw_l_y0,
-                                   fill="", outline="#121212", width=1, dash=(1, 4))
+                                   fill="", outline="#0f0f0e", width=1, dash=(1, 5))
 
-        # 7. Planned Survey Centerlines & Turnaround Waypoints
+        # ── 7. Planned Survey Lines & Dubins Arcs ────────────────────────────
         if self.mission is not None:
             for idx, lane in enumerate(self.mission.lanes):
                 sx, sy, _ = self.world_to_canvas(lane["start"][0], lane["start"][1], cw, ch)
                 ex, ey, _ = self.world_to_canvas(lane["end"][0], lane["end"][1], cw, ch)
-                is_active_lane = (idx == cur_lane_idx and "SURVEY" in self.mission.state.value)
-                line_col = "#7f1d1d" if is_active_lane else "#252525"
-                c.create_line(sx, sy, ex, ey, fill=line_col, dash=(4, 4), width=1.2 if is_active_lane else 1.0)
-                c.create_text((sx + ex) / 2 + 10, (sy + ey) / 2, text=f"L{idx+1}",
-                              fill=self.c_red_bright if is_active_lane else "#555555",
-                              font=("Consolas", 8, "bold" if is_active_lane else "normal"))
+                is_active = (idx == cur_lane_idx and "SURVEY" in self.mission.state.value)
+                line_col = "#6b1a1a" if is_active else "#1e1e1d"
+                c.create_line(sx, sy, ex, ey, fill=line_col, dash=(3, 5), width=1.2 if is_active else 0.8)
+                c.create_text((sx + ex) / 2 + 8, (sy + ey) / 2, text=f"L{idx+1}",
+                              fill=self.c_red_bright if is_active else "#3a3a38",
+                              font=("Consolas", 7, "bold" if is_active else "normal"))
+                # Waypoint dots
+                c.create_oval(sx - 2, sy - 2, sx + 2, sy + 2, fill="#333332", outline="")
+                c.create_oval(ex - 2, ey - 2, ex + 2, ey + 2, fill="#333332", outline="")
 
-                # Waypoint pips at entry/exit
-                c.create_oval(sx - 2, sy - 2, sx + 2, sy + 2, fill="#404040", outline="")
-                c.create_oval(ex - 2, ey - 2, ex + 2, ey + 2, fill="#404040", outline="")
-
-            # Continuous Dubins Turn Arcs (R = 9.0m)
+            # Dubins turn arcs
             for arc in self.mission.dubins_arcs:
                 pts = []
                 for st in range(22):
@@ -919,51 +1016,45 @@ class TkinterGCS:
                         ay = arc["center"][1] - arc["radius"] * math.cos(rad)
                     cx_p, cy_p, _ = self.world_to_canvas(ax, ay, cw, ch)
                     pts.extend([cx_p, cy_p])
-                c.create_line(*pts, fill="#252525", dash=(2, 3), width=1)
+                c.create_line(*pts, fill="#1e1e1d", dash=(2, 4), width=0.8)
 
-        # 8. Dual-Tone Flown Breadcrumb Flight Trail (Deep Crimson to Vivid Red Vector)
+        # ── 8. Flight Trail (gradient crimson breadcrumbs) ───────────────────
         if len(self.trail) > 1:
             recent_split = max(0, len(self.trail) - 35)
-            # Older historic trail
             if recent_split > 1:
                 hist_pts = []
                 for tpt in self.trail[:recent_split + 1]:
                     tx_c, ty_c, _ = self.world_to_canvas(tpt[0], tpt[1], cw, ch)
                     hist_pts.extend([tx_c, ty_c])
-                c.create_line(*hist_pts, fill="#3d1219", width=1.5)
-
-            # Recent active flight vector
+                c.create_line(*hist_pts, fill="#301018", width=1.5)
             active_pts = []
             for tpt in self.trail[recent_split:]:
                 tx_c, ty_c, _ = self.world_to_canvas(tpt[0], tpt[1], cw, ch)
                 active_pts.extend([tx_c, ty_c])
-            c.create_line(*active_pts, fill=self.c_red_bright, width=2.0)
+            if len(active_pts) >= 4:
+                c.create_line(*active_pts, fill=self.c_red_bright, width=2.0)
 
-        # 9. ICAO Aviation Pylon Towers at 4 Corners
-        corners = [(0.0, -45.0, "SW"), (120.0, -45.0, "NW"), (120.0, 45.0, "NE"), (0.0, 45.0, "SE")]
-        for px_c, py_c, c_tag in corners:
+        # ── 9. Corner Survey Markers ─────────────────────────────────────────
+        corners = [(0.0, -45.0), (120.0, -45.0), (120.0, 45.0), (0.0, 45.0)]
+        for px_c, py_c in corners:
             tc_x, tc_y, _ = self.world_to_canvas(px_c, py_c, cw, ch)
-            # Monotone perimeter pylon beacon marker
-            c.create_rectangle(tc_x - 3.5, tc_y - 3.5, tc_x + 3.5, tc_y + 3.5, outline="#333333", fill="#111111", width=1)
-            c.create_oval(tc_x - 1.5, tc_y - 1.5, tc_x + 1.5, tc_y + 1.5, fill=self.c_red_bright, outline="")
-            # Tactical corner bracket
-            dx_b = 6 if py_c > 0 else -6
-            dy_b = -6 if px_c > 60 else 6
-            c.create_line(tc_x, tc_y, tc_x + dx_b, tc_y, fill=self.c_red_bright, width=1.5)
-            c.create_line(tc_x, tc_y, tc_x, tc_y + dy_b, fill=self.c_red_bright, width=1.5)
+            # Simple crosshair marker
+            c.create_line(tc_x - 5, tc_y, tc_x + 5, tc_y, fill="#2a2a28", width=1)
+            c.create_line(tc_x, tc_y - 5, tc_x, tc_y + 5, fill="#2a2a28", width=1)
+            c.create_oval(tc_x - 1.5, tc_y - 1.5, tc_x + 1.5, tc_y + 1.5,
+                          fill=self.c_red_bright, outline="")
 
-        # 10. Operational Helipad Launch Complex at (0, 0)
+        # ── 10. Helipad / Launch Point ───────────────────────────────────────
         h_x, h_y, _ = self.world_to_canvas(0, 0, cw, ch)
-        c.create_oval(h_x - 10, h_y - 10, h_x + 10, h_y + 10, outline="#242424", width=1.5)
-        c.create_oval(h_x - 6, h_y - 6, h_x + 6, h_y + 6, outline="#383838", width=1, dash=(2, 2))
-        c.create_text(h_x, h_y, text="H", fill=self.c_text_high, font=("Consolas", 8, "bold"))
-        c.create_text(h_x, h_y + 13, text="LAUNCH/RTL", fill="#555555", font=("Consolas", 6))
+        c.create_oval(h_x - 12, h_y - 12, h_x + 12, h_y + 12, outline="#1e1e1d", width=1.5)
+        c.create_oval(h_x - 7, h_y - 7, h_x + 7, h_y + 7, outline="#2a2a28", width=1, dash=(2, 2))
+        c.create_text(h_x, h_y, text="H", fill="#d0d0d0", font=("Consolas", 9, "bold"))
 
-        # 11. Confirmed Contacts with Triage Priority Badges & Covariance Uncertainty
+        # ── 11. Targets with Priority Badges & Covariance ────────────────────
         if self.mission is not None:
             for t in self.mission.detector.get_all_targets():
-                tx_c, ty_c, scale = self.world_to_canvas(t.x, t.y, cw, ch)
-                r_cov = max(7, t.pos_std_dev * scale)
+                tx_c, ty_c, sc = self.world_to_canvas(t.x, t.y, cw, ch)
+                r_cov = max(7, t.pos_std_dev * sc)
 
                 pri_str = getattr(t, 'priority', 'P2 - HIGH')
                 pri_tok = pri_str.split(" ")[0] if " " in pri_str else "P2"
@@ -973,77 +1064,77 @@ class TkinterGCS:
                     cov_outline = "#881322"
                     glyph_fill = "#4c0519"
                     glyph_outline = "#ff2b4b"
-                    badge_border = "#991b1b"
+                    badge_bg = "#0a0203"
+                    badge_border = "#661020"
                 elif "P2" in pri_tok:
-                    cov_outline = "#66101d"
+                    cov_outline = "#55101a"
                     glyph_fill = self.c_red_dark
                     glyph_outline = self.c_red_bright
+                    badge_bg = "#060303"
                     badge_border = "#2b0a0a"
                 else:
-                    cov_outline = "#262626"
-                    glyph_fill = "#171717"
-                    glyph_outline = "#525252"
-                    badge_border = "#262626"
+                    cov_outline = "#222221"
+                    glyph_fill = "#141413"
+                    glyph_outline = "#454544"
+                    badge_bg = "#060605"
+                    badge_border = "#222221"
 
-                # Covariance Uncertainty Circle
+                # Covariance uncertainty ring
                 c.create_oval(tx_c - r_cov, ty_c - r_cov, tx_c + r_cov, ty_c + r_cov,
-                              outline=cov_outline, width=1)
+                              outline=cov_outline, width=1, dash=(3, 2))
 
-                # Target Geometry Glyphs
-                c.create_rectangle(tx_c - 4, ty_c - 4, tx_c + 4, ty_c + 4,
-                                   fill=glyph_fill, outline=glyph_outline, width=1.5)
+                # Target glyph (diamond for P1, square for P2/P3)
+                if "P1" in pri_tok:
+                    c.create_polygon(tx_c, ty_c - 5, tx_c + 5, ty_c, tx_c, ty_c + 5, tx_c - 5, ty_c,
+                                     fill=glyph_fill, outline=glyph_outline, width=1.5)
+                else:
+                    c.create_rectangle(tx_c - 4, ty_c - 4, tx_c + 4, ty_c + 4,
+                                       fill=glyph_fill, outline=glyph_outline, width=1.5)
 
                 tag_str = f"#{t.target_id:02d} [{pri_tok}] {t_name}"
 
-                # Boundary edge guard: flip label anchor if close to right margin
-                if tx_c > (cw - 130):
-                    tag_x = tx_c - 8
+                # Flip label if near right edge
+                if tx_c > (cw - 140):
+                    tag_x = tx_c - 10
                     tag_anchor = "e"
-                    box_x0 = tag_x - len(tag_str) * 6.0 - 4
+                    box_x0 = tag_x - len(tag_str) * 5.5 - 4
                     box_x1 = tag_x + 2
                 else:
-                    tag_x = tx_c + 8
+                    tag_x = tx_c + 10
                     tag_anchor = "w"
                     box_x0 = tag_x - 2
-                    box_x1 = tag_x + len(tag_str) * 6.0 + 4
+                    box_x1 = tag_x + len(tag_str) * 5.5 + 4
 
-                # Crisp High-Contrast Backing Badge
                 c.create_rectangle(box_x0, ty_c - 7, box_x1, ty_c + 7,
-                                   fill="#050505", outline=badge_border, width=1)
+                                   fill=badge_bg, outline=badge_border, width=1)
                 c.create_text(tag_x, ty_c, text=tag_str,
-                              anchor=tag_anchor, fill=self.c_text_high, font=("Consolas", 7, "bold"))
+                              anchor=tag_anchor, fill="#e0e0de", font=("Consolas", 7, "bold"))
 
-        # 12. Drone Quadcopter Silhouette & Optical Nadir Ground Projection
+        # ── 12. Drone & Optical FOV Projection ───────────────────────────────
         dp_x, dp_y, scale = self.world_to_canvas(px, py, cw, ch)
         yaw_rad = math.radians(yaw_deg)
         alt = max(1.0, -pz)
 
-        # 45-degree Forward Pitch Optical Nadir Ground Cone
         fov_ahead_ctr = alt * 1.0
         fov_half_w = alt * 0.84
         fov_depth_half = alt * 0.45
 
         p_far_l_x = px + (fov_ahead_ctr + fov_depth_half) * math.cos(yaw_rad) - (fov_half_w * 1.15) * math.sin(yaw_rad)
         p_far_l_y = py + (fov_ahead_ctr + fov_depth_half) * math.sin(yaw_rad) + (fov_half_w * 1.15) * math.cos(yaw_rad)
-
         p_far_r_x = px + (fov_ahead_ctr + fov_depth_half) * math.cos(yaw_rad) + (fov_half_w * 1.15) * math.sin(yaw_rad)
         p_far_r_y = py + (fov_ahead_ctr + fov_depth_half) * math.sin(yaw_rad) - (fov_half_w * 1.15) * math.cos(yaw_rad)
-
         p_near_r_x = px + (fov_ahead_ctr - fov_depth_half) * math.cos(yaw_rad) + (fov_half_w * 0.85) * math.sin(yaw_rad)
         p_near_r_y = py + (fov_ahead_ctr - fov_depth_half) * math.sin(yaw_rad) - (fov_half_w * 0.85) * math.cos(yaw_rad)
-
         p_near_l_x = px + (fov_ahead_ctr - fov_depth_half) * math.cos(yaw_rad) - (fov_half_w * 0.85) * math.sin(yaw_rad)
         p_near_l_y = py + (fov_ahead_ctr - fov_depth_half) * math.sin(yaw_rad) + (fov_half_w * 0.85) * math.cos(yaw_rad)
 
-        # Accumulate photogrammetric ground coverage patch when airborne
+        # Coverage accumulation
         now = time.time()
         if alt >= 3.0 and (now - self.last_coverage_time) >= 0.25:
             self.last_coverage_time = now
             self.coverage_patches.append((
-                p_near_l_x, p_near_l_y,
-                p_far_l_x, p_far_l_y,
-                p_far_r_x, p_far_r_y,
-                p_near_r_x, p_near_r_y
+                p_near_l_x, p_near_l_y, p_far_l_x, p_far_l_y,
+                p_far_r_x, p_far_r_y, p_near_r_x, p_near_r_y
             ))
             if len(self.coverage_patches) > 1500:
                 self.coverage_patches = self.coverage_patches[-1500:]
@@ -1053,51 +1144,50 @@ class TkinterGCS:
         c_nr_x, c_nr_y, _ = self.world_to_canvas(p_near_r_x, p_near_r_y, cw, ch)
         c_nl_x, c_nl_y, _ = self.world_to_canvas(p_near_l_x, p_near_l_y, cw, ch)
 
-        c.create_polygon(dp_x, dp_y, c_fl_x, c_fl_y, c_fr_x, c_fr_y, fill="#0d0407", outline="#25090f", width=1)
+        # FOV footprint (subtle)
+        c.create_polygon(dp_x, dp_y, c_fl_x, c_fl_y, c_fr_x, c_fr_y,
+                         fill="#0a0305", outline="#1a0810", width=1)
         c.create_polygon(c_nl_x, c_nl_y, c_fl_x, c_fl_y, c_fr_x, c_fr_y, c_nr_x, c_nr_y,
-                         fill="#14060a", outline="#3b0f17", width=1)
+                         fill="#0e0508", outline="#280d14", width=1)
 
-        # Drone Quadcopter Frame (Neutral Silver Cross)
-        arm_len = 8.0
-        c.create_line(dp_x - arm_len, dp_y - arm_len, dp_x + arm_len, dp_y + arm_len, fill="#cccccc", width=1.5)
-        c.create_line(dp_x - arm_len, dp_y + arm_len, dp_x + arm_len, dp_y - arm_len, fill="#cccccc", width=1.5)
-
-        # Rotors (Dark Red Accents)
-        for rx in [-arm_len, arm_len]:
-            for ry in [-arm_len, arm_len]:
+        # Drone silhouette (X-frame quadcopter)
+        arm = 7.0
+        c.create_line(dp_x - arm, dp_y - arm, dp_x + arm, dp_y + arm, fill="#c0c0be", width=1.5)
+        c.create_line(dp_x - arm, dp_y + arm, dp_x + arm, dp_y - arm, fill="#c0c0be", width=1.5)
+        for rx in [-arm, arm]:
+            for ry in [-arm, arm]:
                 c.create_oval(dp_x + rx - 2.5, dp_y + ry - 2.5, dp_x + rx + 2.5, dp_y + ry + 2.5,
                               fill=self.c_red, outline=self.c_red_bright)
+        c.create_oval(dp_x - 2, dp_y - 2, dp_x + 2, dp_y + 2, fill="#e8e8e6", outline="")
 
-        # Center Hub
-        c.create_oval(dp_x - 2, dp_y - 2, dp_x + 2, dp_y + 2, fill="#f0f0f0", outline="")
-
-        # Forward Heading Vector Arrow (Sharp Crimson Vector)
-        hdg_len = 15.0
+        # Heading vector
+        hdg_len = 14.0
         hx = dp_x + hdg_len * math.sin(yaw_rad)
         hy = dp_y - hdg_len * math.cos(yaw_rad)
         c.create_line(dp_x, dp_y, hx, hy, fill=self.c_red_bright, width=2, arrow=tk.LAST)
 
-        # 13. Cardinal Tactical Compass Rose (Top-Right)
+        # ── 13. Compass Rose (Top-Right) ─────────────────────────────────────
         comp_x = cw - 22.0
-        comp_y = 24.0
-        c.create_polygon(comp_x, comp_y - 12, comp_x - 4, comp_y - 2, comp_x + 4, comp_y - 2,
-                         fill=self.c_red_bright, outline=self.c_red_bright)
-        c.create_polygon(comp_x, comp_y + 8, comp_x - 4, comp_y - 2, comp_x + 4, comp_y - 2,
-                         fill="#222222", outline="#222222")
-        c.create_oval(comp_x - 2, comp_y - 4, comp_x + 2, comp_y, fill="#000000", outline="#444444")
-        c.create_text(comp_x, comp_y + 16, text="N", fill=self.c_text_high, font=("Consolas", 8, "bold"))
+        comp_y = 22.0
+        c.create_polygon(comp_x, comp_y - 10, comp_x - 3, comp_y - 1, comp_x + 3, comp_y - 1,
+                         fill=self.c_red_bright, outline="")
+        c.create_polygon(comp_x, comp_y + 7, comp_x - 3, comp_y - 1, comp_x + 3, comp_y - 1,
+                         fill="#1a1a19", outline="")
+        c.create_text(comp_x, comp_y + 14, text="N", fill="#a0a09e", font=("Consolas", 7, "bold"))
 
-        # 14. Tactical Map Scale Bar (20m reference in bottom-left)
+        # ── 14. Scale Bar (Bottom-Left) ──────────────────────────────────────
         bar_len_m = 20.0
         bar_px = bar_len_m * scale
-        sb_x = 24.0
-        sb_y = ch - 16.0
-        c.create_line(sb_x, sb_y, sb_x + bar_px, sb_y, fill="#383838", width=1.5)
-        c.create_line(sb_x, sb_y - 3, sb_x, sb_y + 3, fill="#383838", width=1.5)
-        c.create_line(sb_x + bar_px / 2.0, sb_y - 2, sb_x + bar_px / 2.0, sb_y + 2, fill="#383838", width=1.0)
-        c.create_line(sb_x + bar_px, sb_y - 3, sb_x + bar_px, sb_y + 3, fill="#383838", width=1.5)
-        c.create_text(sb_x + bar_px / 2.0, sb_y - 8, text=f"{int(bar_len_m)} m", fill="#707070", font=("Consolas", 7))
+        sb_x = 20.0
+        sb_y = ch - 14.0
+        c.create_line(sb_x, sb_y, sb_x + bar_px, sb_y, fill="#2a2a28", width=1.5)
+        c.create_line(sb_x, sb_y - 3, sb_x, sb_y + 3, fill="#2a2a28", width=1)
+        c.create_line(sb_x + bar_px, sb_y - 3, sb_x + bar_px, sb_y + 3, fill="#2a2a28", width=1)
+        c.create_text(sb_x + bar_px / 2.0, sb_y - 7, text=f"{int(bar_len_m)} m",
+                      fill="#555553", font=("Consolas", 6))
 
-        # 15. Zoom Level Indicator (Top-Left of Map)
+        # ── 15. Zoom Indicator ───────────────────────────────────────────────
         if abs(self.zoom_factor - 1.0) > 0.05:
-            c.create_text(30.0, 14.0, text=f"ZOOM: {self.zoom_factor:.1f}x", fill="#707070", font=("Consolas", 7, "bold"))
+            c.create_text(28.0, 12.0, text=f"×{self.zoom_factor:.1f}",
+                          fill="#555553", font=("Consolas", 7, "bold"))
+
