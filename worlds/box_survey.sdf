@@ -399,101 +399,196 @@
     <!-- Gazebo ENU: X_gz = Y_ned (East), Y_gz = X_ned (North)            -->
     <!-- ================================================================ -->
 
-    <!-- TARGET 1: Red Cargo Crate - Far-West Perimeter Edge (X_ned=28.0, Y_ned=-42.5) -->
-    <!-- Tests outer-left camera edge on Lane 1 -->
+    <!-- TARGET 1: TRAUMA MEDICAL CACHE [RED] - Far-West Perimeter Edge (X_ned=28.0, Y_ned=-42.5) -->
+    <!-- Military field surgical & trauma care equipment chest with cross emblem & drop handles -->
     <model name="target_cube_red">
       <static>true</static>
       <pose>-42.5 28.0 0 0 0 0.25</pose>
       <link name="link">
         <collision name="col"><pose>0 0 0.6 0 0 0</pose><geometry><box><size>1.5 1.5 1.2</size></box></geometry></collision>
-        <visual name="skid_left"><pose>-0.55 0 0.06 0 0 0</pose><geometry><box><size>0.15 1.5 0.12</size></box></geometry><material><ambient>0.15 0.15 0.15 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material></visual>
-        <visual name="skid_right"><pose>0.55 0 0.06 0 0 0</pose><geometry><box><size>0.15 1.5 0.12</size></box></geometry><material><ambient>0.15 0.15 0.15 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material></visual>
-        <visual name="body"><pose>0 0 0.64 0 0 0</pose><geometry><box><size>1.46 1.46 1.04</size></box></geometry><material><ambient>0.88 0.10 0.10 1</ambient><diffuse>0.92 0.12 0.12 1</diffuse><specular>0.3 0.3 0.3 1</specular></material></visual>
-        <visual name="lid_trim"><pose>0 0 1.17 0 0 0</pose><geometry><box><size>1.50 1.50 0.04</size></box></geometry><material><ambient>0.18 0.18 0.18 1</ambient><diffuse>0.18 0.18 0.18 1</diffuse></material></visual>
+        <!-- Heavy Pallet Base Skids -->
+        <visual name="skid_left"><pose>-0.55 0 0.06 0 0 0</pose><geometry><box><size>0.16 1.50 0.12</size></box></geometry><material><ambient>0.12 0.12 0.12 1</ambient><diffuse>0.14 0.14 0.14 1</diffuse></material></visual>
+        <visual name="skid_right"><pose>0.55 0 0.06 0 0 0</pose><geometry><box><size>0.16 1.50 0.12</size></box></geometry><material><ambient>0.12 0.12 0.12 1</ambient><diffuse>0.14 0.14 0.14 1</diffuse></material></visual>
+        <!-- Main Red Medical Chest Body -->
+        <visual name="body"><pose>0 0 0.60 0 0 0</pose><geometry><box><size>1.46 1.46 0.96</size></box></geometry><material><ambient>0.88 0.10 0.10 1</ambient><diffuse>0.92 0.12 0.12 1</diffuse><specular>0.3 0.3 0.3 1</specular></material></visual>
+        <!-- Black Protective Corner Armor Caps (8 corners) -->
+        <visual name="cap_blf"><pose>-0.65 -0.65 0.20 0 0 0</pose><geometry><box><size>0.20 0.20 0.22</size></box></geometry><material><ambient>0.10 0.10 0.10 1</ambient><diffuse>0.12 0.12 0.12 1</diffuse></material></visual>
+        <visual name="cap_brf"><pose>0.65 -0.65 0.20 0 0 0</pose><geometry><box><size>0.20 0.20 0.22</size></box></geometry><material><ambient>0.10 0.10 0.10 1</ambient><diffuse>0.12 0.12 0.12 1</diffuse></material></visual>
+        <visual name="cap_blr"><pose>-0.65 0.65 0.20 0 0 0</pose><geometry><box><size>0.20 0.20 0.22</size></box></geometry><material><ambient>0.10 0.10 0.10 1</ambient><diffuse>0.12 0.12 0.12 1</diffuse></material></visual>
+        <visual name="cap_brr"><pose>0.65 0.65 0.20 0 0 0</pose><geometry><box><size>0.20 0.20 0.22</size></box></geometry><material><ambient>0.10 0.10 0.10 1</ambient><diffuse>0.12 0.12 0.12 1</diffuse></material></visual>
+        <visual name="cap_tlf"><pose>-0.65 -0.65 1.00 0 0 0</pose><geometry><box><size>0.20 0.20 0.20</size></box></geometry><material><ambient>0.10 0.10 0.10 1</ambient><diffuse>0.12 0.12 0.12 1</diffuse></material></visual>
+        <visual name="cap_trf"><pose>0.65 -0.65 1.00 0 0 0</pose><geometry><box><size>0.20 0.20 0.20</size></box></geometry><material><ambient>0.10 0.10 0.10 1</ambient><diffuse>0.12 0.12 0.12 1</diffuse></material></visual>
+        <visual name="cap_tlr"><pose>-0.65 0.65 1.00 0 0 0</pose><geometry><box><size>0.20 0.20 0.20</size></box></geometry><material><ambient>0.10 0.10 0.10 1</ambient><diffuse>0.12 0.12 0.12 1</diffuse></material></visual>
+        <visual name="cap_trr"><pose>0.65 0.65 1.00 0 0 0</pose><geometry><box><size>0.20 0.20 0.20</size></box></geometry><material><ambient>0.10 0.10 0.10 1</ambient><diffuse>0.12 0.12 0.12 1</diffuse></material></visual>
+        <!-- Prominent White Medical Cross on Top Lid -->
+        <visual name="cross_v"><pose>0 0 1.085 0 0 0</pose><geometry><box><size>0.34 0.98 0.02</size></box></geometry><material><ambient>0.95 0.95 0.95 1</ambient><diffuse>0.98 0.98 0.98 1</diffuse></material></visual>
+        <visual name="cross_h"><pose>0 0 1.085 0 0 0</pose><geometry><box><size>0.98 0.34 0.02</size></box></geometry><material><ambient>0.95 0.95 0.95 1</ambient><diffuse>0.98 0.98 0.98 1</diffuse></material></visual>
+        <!-- Heavy Drop Handles & Hardware -->
+        <visual name="handle_f"><pose>0 -0.74 0.65 0 0 0</pose><geometry><box><size>0.28 0.04 0.08</size></box></geometry><material><ambient>0.12 0.12 0.12 1</ambient><diffuse>0.14 0.14 0.14 1</diffuse></material></visual>
+        <visual name="handle_r"><pose>0 0.74 0.65 0 0 0</pose><geometry><box><size>0.28 0.04 0.08</size></box></geometry><material><ambient>0.12 0.12 0.12 1</ambient><diffuse>0.14 0.14 0.14 1</diffuse></material></visual>
+        <!-- White Stenciled Triage Identification Plate on Front -->
+        <visual name="id_plate"><pose>0 -0.735 0.45 0 0 0</pose><geometry><box><size>0.65 0.01 0.16</size></box></geometry><material><ambient>0.92 0.92 0.92 1</ambient><diffuse>0.95 0.95 0.95 1</diffuse></material></visual>
+        <!-- Pressure Equalization Relief Valve on Top -->
+        <visual name="valve"><pose>0.48 0.48 1.09 0 0 0</pose><geometry><cylinder><radius>0.06</radius><length>0.04</length></cylinder></geometry><material><ambient>0.15 0.15 0.15 1</ambient><diffuse>0.20 0.20 0.20 1</diffuse></material></visual>
       </link>
     </model>
 
-    <!-- TARGET 2: Yellow Hazard Crate - NW Knoll Tier 2 Summit (X_ned=86.0, Y_ned=-24.0, Z_ned=-0.44m) -->
-    <!-- Tests elevated terrain target and inter-swath viewing -->
+    <!-- TARGET 2: HAZMAT TOXIC SPILL OVERPACK [YELLOW] - NW Knoll Tier 2 Summit (X_ned=86.0, Y_ned=-24.0, Z_ned=-0.44m) -->
+    <!-- Hazardous chemical containment unit with secondary containment sump pallet & biohazard emblem -->
     <model name="target_cube_yellow">
       <static>true</static>
       <pose>-24.0 86.0 0.44 0 0 -0.35</pose>
       <link name="link">
         <collision name="col"><pose>0 0 0.65 0 0 0</pose><geometry><box><size>1.6 1.6 1.3</size></box></geometry></collision>
-        <visual name="skid_left"><pose>-0.6 0 0.06 0 0 0</pose><geometry><box><size>0.15 1.6 0.12</size></box></geometry><material><ambient>0.15 0.15 0.15 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material></visual>
-        <visual name="skid_right"><pose>0.6 0 0.06 0 0 0</pose><geometry><box><size>0.15 1.6 0.12</size></box></geometry><material><ambient>0.15 0.15 0.15 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material></visual>
-        <visual name="body"><pose>0 0 0.70 0 0 0</pose><geometry><box><size>1.54 1.54 1.16</size></box></geometry><material><ambient>0.92 0.85 0.06 1</ambient><diffuse>0.95 0.88 0.08 1</diffuse><specular>0.3 0.3 0.3 1</specular></material></visual>
-        <visual name="lid_trim"><pose>0 0 1.29 0 0 0</pose><geometry><box><size>1.60 1.60 0.04</size></box></geometry><material><ambient>0.18 0.18 0.18 1</ambient><diffuse>0.18 0.18 0.18 1</diffuse></material></visual>
+        <!-- Heavy Black Secondary Spill Containment Sump Pallet -->
+        <visual name="sump_tray"><pose>0 0 0.08 0 0 0</pose><geometry><box><size>1.70 1.70 0.16</size></box></geometry><material><ambient>0.10 0.10 0.10 1</ambient><diffuse>0.12 0.12 0.12 1</diffuse></material></visual>
+        <visual name="sump_drain"><pose>0.82 0 0.08 0 1.5708 0</pose><geometry><cylinder><radius>0.04</radius><length>0.08</length></cylinder></geometry><material><ambient>0.3 0.3 0.3 1</ambient><diffuse>0.35 0.35 0.35 1</diffuse></material></visual>
+        <!-- Main Yellow Chemical Containment Chest Body -->
+        <visual name="body"><pose>0 0 0.68 0 0 0</pose><geometry><box><size>1.52 1.52 1.08</size></box></geometry><material><ambient>0.92 0.85 0.06 1</ambient><diffuse>0.95 0.88 0.08 1</diffuse><specular>0.3 0.3 0.3 1</specular></material></visual>
+        <!-- Black Tension Bands Clamping Vault -->
+        <visual name="band_lower"><pose>0 0 0.42 0 0 0</pose><geometry><box><size>1.55 1.55 0.06</size></box></geometry><material><ambient>0.12 0.12 0.12 1</ambient><diffuse>0.14 0.14 0.14 1</diffuse></material></visual>
+        <visual name="band_upper"><pose>0 0 0.90 0 0 0</pose><geometry><box><size>1.55 1.55 0.06</size></box></geometry><material><ambient>0.12 0.12 0.12 1</ambient><diffuse>0.14 0.14 0.14 1</diffuse></material></visual>
+        <!-- Biohazard / Hazard Warning Emblem on Top Lid -->
+        <visual name="bio_disk"><pose>0 0 1.225 0 0 0</pose><geometry><cylinder><radius>0.24</radius><length>0.02</length></cylinder></geometry><material><ambient>0.08 0.08 0.08 1</ambient><diffuse>0.10 0.10 0.10 1</diffuse></material></visual>
+        <visual name="bio_petal1"><pose>0 0.32 1.225 0 0 0</pose><geometry><cylinder><radius>0.14</radius><length>0.02</length></cylinder></geometry><material><ambient>0.08 0.08 0.08 1</ambient><diffuse>0.10 0.10 0.10 1</diffuse></material></visual>
+        <visual name="bio_petal2"><pose>-0.28 -0.16 1.225 0 0 0</pose><geometry><cylinder><radius>0.14</radius><length>0.02</length></cylinder></geometry><material><ambient>0.08 0.08 0.08 1</ambient><diffuse>0.10 0.10 0.10 1</diffuse></material></visual>
+        <visual name="bio_petal3"><pose>0.28 -0.16 1.225 0 0 0</pose><geometry><cylinder><radius>0.14</radius><length>0.02</length></cylinder></geometry><material><ambient>0.08 0.08 0.08 1</ambient><diffuse>0.10 0.10 0.10 1</diffuse></material></visual>
+        <!-- Chemical Vapor Exhaust Vents on Top -->
+        <visual name="vent_1"><pose>-0.52 0.52 1.27 0 0 0</pose><geometry><cylinder><radius>0.07</radius><length>0.12</length></cylinder></geometry><material><ambient>0.20 0.20 0.20 1</ambient><diffuse>0.25 0.25 0.25 1</diffuse></material></visual>
+        <visual name="vent_2"><pose>0.52 0.52 1.27 0 0 0</pose><geometry><cylinder><radius>0.07</radius><length>0.12</length></cylinder></geometry><material><ambient>0.20 0.20 0.20 1</ambient><diffuse>0.25 0.25 0.25 1</diffuse></material></visual>
+        <!-- Hazmat Warning Diamond Placard on Front -->
+        <visual name="diamond_placard"><pose>0 -0.765 0.65 0 0 0.7854</pose><geometry><box><size>0.42 0.42 0.01</size></box></geometry><material><ambient>0.08 0.08 0.08 1</ambient><diffuse>0.10 0.10 0.10 1</diffuse></material></visual>
       </link>
     </model>
 
-    <!-- TARGET 3: Green Storage Crate - Inter-Swath Flank (X_ned=56.0, Y_ned=-6.0) -->
-    <!-- Tests lateral flank camera coverage between Lane 2 & Lane 3 -->
+    <!-- TARGET 3: EMERGENCY RATIONS POD [GREEN] - Inter-Swath Flank (X_ned=56.0, Y_ned=-6.0) -->
+    <!-- Humanitarian emergency provisions pod with heavy cargo webbing, lifting lugs & UN markings -->
     <model name="target_cube_green">
       <static>true</static>
       <pose>-6.0 56.0 0 0 0 0.15</pose>
       <link name="link">
         <collision name="col"><pose>0 0 0.65 0 0 0</pose><geometry><box><size>1.6 1.5 1.3</size></box></geometry></collision>
-        <visual name="skid_left"><pose>-0.6 0 0.06 0 0 0</pose><geometry><box><size>0.15 1.5 0.12</size></box></geometry><material><ambient>0.15 0.15 0.15 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material></visual>
-        <visual name="skid_right"><pose>0.6 0 0.06 0 0 0</pose><geometry><box><size>0.15 1.5 0.12</size></box></geometry><material><ambient>0.15 0.15 0.15 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material></visual>
-        <visual name="body"><pose>0 0 0.70 0 0 0</pose><geometry><box><size>1.54 1.44 1.16</size></box></geometry><material><ambient>0.06 0.78 0.16 1</ambient><diffuse>0.08 0.82 0.18 1</diffuse><specular>0.3 0.3 0.3 1</specular></material></visual>
-        <visual name="lid_trim"><pose>0 0 1.29 0 0 0</pose><geometry><box><size>1.60 1.50 0.04</size></box></geometry><material><ambient>0.18 0.18 0.18 1</ambient><diffuse>0.18 0.18 0.18 1</diffuse></material></visual>
+        <!-- Heavy Composite Pallet Foundation with Forklift Channels -->
+        <visual name="pallet_base"><pose>0 0 0.06 0 0 0</pose><geometry><box><size>1.56 1.50 0.12</size></box></geometry><material><ambient>0.22 0.20 0.18 1</ambient><diffuse>0.28 0.25 0.22 1</diffuse></material></visual>
+        <!-- Main Olive Green Provisions Pod Body -->
+        <visual name="body"><pose>0 0 0.68 0 0 0</pose><geometry><box><size>1.50 1.44 1.06</size></box></geometry><material><ambient>0.06 0.78 0.16 1</ambient><diffuse>0.08 0.82 0.18 1</diffuse><specular>0.3 0.3 0.3 1</specular></material></visual>
+        <!-- Heavy Black Cargo Ratchet Straps Crossing Top & Sides -->
+        <visual name="strap_long"><pose>0 0 0.68 0 0 0</pose><geometry><box><size>1.52 0.08 1.08</size></box></geometry><material><ambient>0.08 0.08 0.08 1</ambient><diffuse>0.10 0.10 0.10 1</diffuse></material></visual>
+        <visual name="strap_lat"><pose>0 0 0.68 0 0 0</pose><geometry><box><size>0.08 1.46 1.08</size></box></geometry><material><ambient>0.08 0.08 0.08 1</ambient><diffuse>0.10 0.10 0.10 1</diffuse></material></visual>
+        <!-- Helicopter Crane Lifting Eyes (4 corners) -->
+        <visual name="lift_fl"><pose>-0.68 -0.65 1.25 0 0 0</pose><geometry><cylinder><radius>0.05</radius><length>0.08</length></cylinder></geometry><material><ambient>0.15 0.15 0.15 1</ambient><diffuse>0.20 0.20 0.20 1</diffuse></material></visual>
+        <visual name="lift_fr"><pose>0.68 -0.65 1.25 0 0 0</pose><geometry><cylinder><radius>0.05</radius><length>0.08</length></cylinder></geometry><material><ambient>0.15 0.15 0.15 1</ambient><diffuse>0.20 0.20 0.20 1</diffuse></material></visual>
+        <visual name="lift_rl"><pose>-0.68 0.65 1.25 0 0 0</pose><geometry><cylinder><radius>0.05</radius><length>0.08</length></cylinder></geometry><material><ambient>0.15 0.15 0.15 1</ambient><diffuse>0.20 0.20 0.20 1</diffuse></material></visual>
+        <visual name="lift_rr"><pose>0.68 0.65 1.25 0 0 0</pose><geometry><cylinder><radius>0.05</radius><length>0.08</length></cylinder></geometry><material><ambient>0.15 0.15 0.15 1</ambient><diffuse>0.20 0.20 0.20 1</diffuse></material></visual>
+        <!-- White Humanitarian Relief Aid Stencil Stripe on Top -->
+        <visual name="stencil_stripe"><pose>0 0 1.215 0 0 0</pose><geometry><box><size>1.05 0.26 0.01</size></box></geometry><material><ambient>0.92 0.92 0.92 1</ambient><diffuse>0.96 0.96 0.96 1</diffuse></material></visual>
+        <!-- Front Dual Recessed Twist Latches -->
+        <visual name="latch_1"><pose>-0.40 -0.725 0.70 0 0 0</pose><geometry><box><size>0.12 0.02 0.10</size></box></geometry><material><ambient>0.10 0.10 0.10 1</ambient><diffuse>0.12 0.12 0.12 1</diffuse></material></visual>
+        <visual name="latch_2"><pose>0.40 -0.725 0.70 0 0 0</pose><geometry><box><size>0.12 0.02 0.10</size></box></geometry><material><ambient>0.10 0.10 0.10 1</ambient><diffuse>0.12 0.12 0.12 1</diffuse></material></visual>
       </link>
     </model>
 
-    <!-- TARGET 4: Orange Aid Crate - Southern Sector Approach (X_ned=18.0, Y_ned=8.0) -->
-    <!-- Tests lower swath boundary transition between Lane 3 & Lane 4 -->
+    <!-- TARGET 4: SURVIVOR SHELTER [ORANGE] - Southern Sector Approach (X_ned=18.0, Y_ned=8.0) -->
+    <!-- Rapid-deployment insulated thermal survival pod with reflective roof, entrance flap & strobe beacon -->
     <model name="target_cube_orange">
       <static>true</static>
       <pose>8.0 18.0 0 0 0 -0.2</pose>
       <link name="link">
         <collision name="col"><pose>0 0 0.6 0 0 0</pose><geometry><box><size>1.5 1.5 1.2</size></box></geometry></collision>
-        <visual name="skid_left"><pose>-0.55 0 0.06 0 0 0</pose><geometry><box><size>0.15 1.5 0.12</size></box></geometry><material><ambient>0.15 0.15 0.15 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material></visual>
-        <visual name="skid_right"><pose>0.55 0 0.06 0 0 0</pose><geometry><box><size>0.15 1.5 0.12</size></box></geometry><material><ambient>0.15 0.15 0.15 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material></visual>
-        <visual name="body"><pose>0 0 0.64 0 0 0</pose><geometry><box><size>1.46 1.46 1.04</size></box></geometry><material><ambient>0.95 0.42 0.04 1</ambient><diffuse>0.98 0.45 0.05 1</diffuse><specular>0.3 0.3 0.3 1</specular></material></visual>
-        <visual name="lid_trim"><pose>0 0 1.17 0 0 0</pose><geometry><box><size>1.50 1.50 0.04</size></box></geometry><material><ambient>0.18 0.18 0.18 1</ambient><diffuse>0.18 0.18 0.18 1</diffuse></material></visual>
+        <!-- Base Skid Foundation -->
+        <visual name="skid_l"><pose>-0.55 0 0.05 0 0 0</pose><geometry><box><size>0.16 1.46 0.10</size></box></geometry><material><ambient>0.15 0.15 0.15 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material></visual>
+        <visual name="skid_r"><pose>0.55 0 0.05 0 0 0</pose><geometry><box><size>0.16 1.46 0.10</size></box></geometry><material><ambient>0.15 0.15 0.15 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material></visual>
+        <!-- Main Safety Orange Survival Pod Body -->
+        <visual name="body"><pose>0 0 0.62 0 0 0</pose><geometry><box><size>1.46 1.46 1.04</size></box></geometry><material><ambient>0.95 0.42 0.04 1</ambient><diffuse>0.98 0.45 0.05 1</diffuse><specular>0.3 0.3 0.3 1</specular></material></visual>
+        <!-- Reflective Silver Thermal Roof Insulation Cap -->
+        <visual name="thermal_roof"><pose>0 0 1.15 0 0 0</pose><geometry><box><size>1.30 1.30 0.04</size></box></geometry><material><ambient>0.85 0.88 0.90 1</ambient><diffuse>0.90 0.92 0.94 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+        <!-- Black Exoskeleton Structural Corner Ribs -->
+        <visual name="rib_fl"><pose>-0.70 -0.70 0.62 0 0 0</pose><geometry><cylinder><radius>0.04</radius><length>1.04</length></cylinder></geometry><material><ambient>0.10 0.10 0.10 1</ambient><diffuse>0.12 0.12 0.12 1</diffuse></material></visual>
+        <visual name="rib_fr"><pose>0.70 -0.70 0.62 0 0 0</pose><geometry><cylinder><radius>0.04</radius><length>1.04</length></cylinder></geometry><material><ambient>0.10 0.10 0.10 1</ambient><diffuse>0.12 0.12 0.12 1</diffuse></material></visual>
+        <visual name="rib_rl"><pose>-0.70 0.70 0.62 0 0 0</pose><geometry><cylinder><radius>0.04</radius><length>1.04</length></cylinder></geometry><material><ambient>0.10 0.10 0.10 1</ambient><diffuse>0.12 0.12 0.12 1</diffuse></material></visual>
+        <visual name="rib_rr"><pose>0.70 0.70 0.62 0 0 0</pose><geometry><cylinder><radius>0.04</radius><length>1.04</length></cylinder></geometry><material><ambient>0.10 0.10 0.10 1</ambient><diffuse>0.12 0.12 0.12 1</diffuse></material></visual>
+        <!-- Black Zippered Entry Flap & Inspection Viewport on Front -->
+        <visual name="entry_flap"><pose>0 -0.735 0.58 0 0 0</pose><geometry><box><size>0.68 0.01 0.78</size></box></geometry><material><ambient>0.10 0.10 0.10 1</ambient><diffuse>0.14 0.14 0.14 1</diffuse></material></visual>
+        <visual name="viewport"><pose>0 -0.742 0.72 0 0 0</pose><geometry><box><size>0.32 0.01 0.22</size></box></geometry><material><ambient>0.15 0.20 0.25 1</ambient><diffuse>0.20 0.28 0.35 1</diffuse></material></visual>
+        <!-- Emergency Search-and-Rescue Distress Strobe Beacon on Roof -->
+        <visual name="beacon_base"><pose>0.50 0.50 1.18 0 0 0</pose><geometry><cylinder><radius>0.06</radius><length>0.04</length></cylinder></geometry><material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.1 0.1 0.1 1</diffuse></material></visual>
+        <visual name="beacon_strobe"><pose>0.50 0.50 1.23 0 0 0</pose><geometry><cylinder><radius>0.05</radius><length>0.06</length></cylinder></geometry><material><ambient>0.95 0.3 0.0 1</ambient><diffuse>0.98 0.4 0.0 1</diffuse><emissive>0.8 0.2 0.0 1</emissive></material></visual>
       </link>
     </model>
 
-    <!-- TARGET 5: Blue Supply Crate - CE Natural Ridge Flank (X_ned=44.0, Y_ned=24.0, Z_ned=-0.30m) -->
-    <!-- Tests elevated ridge plateau detection between Lane 4 & Lane 5 -->
+    <!-- TARGET 5: EMERGENCY WATER IBC TOTE [BLUE] - CE Natural Ridge Flank (X_ned=44.0, Y_ned=24.0, Z_ned=-0.30m) -->
+    <!-- 1000L Relief drinking water intermediate bulk container in galvanized tubular cage on pallet -->
     <model name="target_cube_blue">
       <static>true</static>
       <pose>24.0 44.0 0.30 0 0 0.30</pose>
       <link name="link">
         <collision name="col"><pose>0 0 0.6 0 0 0</pose><geometry><box><size>1.5 1.5 1.2</size></box></geometry></collision>
-        <visual name="skid_left"><pose>-0.55 0 0.06 0 0 0</pose><geometry><box><size>0.15 1.5 0.12</size></box></geometry><material><ambient>0.15 0.15 0.15 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material></visual>
-        <visual name="skid_right"><pose>0.55 0 0.06 0 0 0</pose><geometry><box><size>0.15 1.5 0.12</size></box></geometry><material><ambient>0.15 0.15 0.15 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material></visual>
-        <visual name="body"><pose>0 0 0.64 0 0 0</pose><geometry><box><size>1.46 1.46 1.04</size></box></geometry><material><ambient>0.06 0.42 0.90 1</ambient><diffuse>0.08 0.45 0.95 1</diffuse><specular>0.3 0.3 0.3 1</specular></material></visual>
-        <visual name="lid_trim"><pose>0 0 1.17 0 0 0</pose><geometry><box><size>1.50 1.50 0.04</size></box></geometry><material><ambient>0.18 0.18 0.18 1</ambient><diffuse>0.18 0.18 0.18 1</diffuse></material></visual>
+        <!-- Galvanized Steel 4-Way Forklift Pallet Foundation -->
+        <visual name="pallet"><pose>0 0 0.06 0 0 0</pose><geometry><box><size>1.48 1.48 0.12</size></box></geometry><material><ambient>0.40 0.42 0.44 1</ambient><diffuse>0.48 0.50 0.52 1</diffuse><specular>0.4 0.4 0.4 1</specular></material></visual>
+        <!-- Main Blue HDPE Water Tank Inner Reservoir -->
+        <visual name="body"><pose>0 0 0.64 0 0 0</pose><geometry><box><size>1.40 1.40 1.04</size></box></geometry><material><ambient>0.06 0.42 0.90 1</ambient><diffuse>0.08 0.45 0.95 1</diffuse><specular>0.4 0.4 0.4 1</specular></material></visual>
+        <!-- Galvanized Tubular Outer Protective Cage Grid (Corner Columns & Perimeter Rings) -->
+        <visual name="cage_c1"><pose>-0.68 -0.68 0.64 0 0 0</pose><geometry><cylinder><radius>0.03</radius><length>1.04</length></cylinder></geometry><material><ambient>0.55 0.57 0.60 1</ambient><diffuse>0.65 0.68 0.72 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+        <visual name="cage_c2"><pose>0.68 -0.68 0.64 0 0 0</pose><geometry><cylinder><radius>0.03</radius><length>1.04</length></cylinder></geometry><material><ambient>0.55 0.57 0.60 1</ambient><diffuse>0.65 0.68 0.72 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+        <visual name="cage_c3"><pose>-0.68 0.68 0.64 0 0 0</pose><geometry><cylinder><radius>0.03</radius><length>1.04</length></cylinder></geometry><material><ambient>0.55 0.57 0.60 1</ambient><diffuse>0.65 0.68 0.72 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+        <visual name="cage_c4"><pose>0.68 0.68 0.64 0 0 0</pose><geometry><cylinder><radius>0.03</radius><length>1.04</length></cylinder></geometry><material><ambient>0.55 0.57 0.60 1</ambient><diffuse>0.65 0.68 0.72 1</diffuse><specular>0.5 0.5 0.5 1</specular></material></visual>
+        <!-- Perimeter Tubular Wrap Rings -->
+        <visual name="ring_low"><pose>0 0 0.35 0 0 0</pose><geometry><box><size>1.44 1.44 0.03</size></box></geometry><material><ambient>0.55 0.57 0.60 1</ambient><diffuse>0.65 0.68 0.72 1</diffuse></material></visual>
+        <visual name="ring_mid"><pose>0 0 0.65 0 0 0</pose><geometry><box><size>1.44 1.44 0.03</size></box></geometry><material><ambient>0.55 0.57 0.60 1</ambient><diffuse>0.65 0.68 0.72 1</diffuse></material></visual>
+        <visual name="ring_top"><pose>0 0 0.95 0 0 0</pose><geometry><box><size>1.44 1.44 0.03</size></box></geometry><material><ambient>0.55 0.57 0.60 1</ambient><diffuse>0.65 0.68 0.72 1</diffuse></material></visual>
+        <!-- Top 150mm Screw Filling Cap & Breather Vent -->
+        <visual name="fill_cap"><pose>0 0 1.18 0 0 0</pose><geometry><cylinder><radius>0.16</radius><length>0.06</length></cylinder></geometry><material><ambient>0.12 0.12 0.12 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material></visual>
+        <!-- Bottom Discharge Ball Valve Spigot with Red Operating Lever -->
+        <visual name="spigot"><pose>0 -0.74 0.22 1.5708 0 0</pose><geometry><cylinder><radius>0.05</radius><length>0.12</length></cylinder></geometry><material><ambient>0.15 0.15 0.15 1</ambient><diffuse>0.18 0.18 0.18 1</diffuse></material></visual>
+        <visual name="lever"><pose>0.06 -0.76 0.27 0 0 0</pose><geometry><box><size>0.03 0.10 0.02</size></box></geometry><material><ambient>0.85 0.1 0.1 1</ambient><diffuse>0.90 0.12 0.12 1</diffuse></material></visual>
       </link>
     </model>
 
-    <!-- TARGET 6: Purple Avionics Crate - Far-East Perimeter Edge (X_ned=96.0, Y_ned=42.5) -->
-    <!-- Tests outer-right camera edge on Lane 5 -->
+    <!-- TARGET 6: COMMS RELAY STATION [PURPLE] - Far-East Perimeter Edge (X_ned=96.0, Y_ned=42.5) -->
+    <!-- Tactical telecommunications repeater cabinet with folding photovoltaic solar arrays & whip antenna -->
     <model name="target_cube_purple">
       <static>true</static>
       <pose>42.5 96.0 0 0 0 -0.15</pose>
       <link name="link">
         <collision name="col"><pose>0 0 0.6 0 0 0</pose><geometry><box><size>1.5 1.5 1.2</size></box></geometry></collision>
-        <visual name="skid_left"><pose>-0.55 0 0.06 0 0 0</pose><geometry><box><size>0.15 1.5 0.12</size></box></geometry><material><ambient>0.15 0.15 0.15 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material></visual>
-        <visual name="skid_right"><pose>0.55 0 0.06 0 0 0</pose><geometry><box><size>0.15 1.5 0.12</size></box></geometry><material><ambient>0.15 0.15 0.15 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material></visual>
+        <!-- Base Skid Frame -->
+        <visual name="skid_left"><pose>-0.55 0 0.06 0 0 0</pose><geometry><box><size>0.15 1.5 0.12</size></box></geometry><material><ambient>0.12 0.12 0.12 1</ambient><diffuse>0.14 0.14 0.14 1</diffuse></material></visual>
+        <visual name="skid_right"><pose>0.55 0 0.06 0 0 0</pose><geometry><box><size>0.15 1.5 0.12</size></box></geometry><material><ambient>0.12 0.12 0.12 1</ambient><diffuse>0.14 0.14 0.14 1</diffuse></material></visual>
+        <!-- Main Purple Electronics Transit Cabinet Body -->
         <visual name="body"><pose>0 0 0.64 0 0 0</pose><geometry><box><size>1.46 1.46 1.04</size></box></geometry><material><ambient>0.62 0.12 0.88 1</ambient><diffuse>0.68 0.14 0.94 1</diffuse><specular>0.3 0.3 0.3 1</specular></material></visual>
-        <visual name="lid_trim"><pose>0 0 1.17 0 0 0</pose><geometry><box><size>1.50 1.50 0.04</size></box></geometry><material><ambient>0.18 0.18 0.18 1</ambient><diffuse>0.18 0.18 0.18 1</diffuse></material></visual>
+        <!-- Dual Photovoltaic Solar Arrays on Top -->
+        <visual name="solar_l"><pose>-0.34 0 1.18 0 0 0</pose><geometry><box><size>0.60 1.34 0.03</size></box></geometry><material><ambient>0.08 0.12 0.20 1</ambient><diffuse>0.10 0.15 0.25 1</diffuse><specular>0.6 0.6 0.6 1</specular></material></visual>
+        <visual name="solar_r"><pose>0.34 0 1.18 0 0 0</pose><geometry><box><size>0.60 1.34 0.03</size></box></geometry><material><ambient>0.08 0.12 0.20 1</ambient><diffuse>0.10 0.15 0.25 1</diffuse><specular>0.6 0.6 0.6 1</specular></material></visual>
+        <!-- Telescoping Tactical Mesh Radio Antenna Mast & Radome -->
+        <visual name="antenna_mast"><pose>0.55 0.55 1.65 0 0 0</pose><geometry><cylinder><radius>0.025</radius><length>0.90</length></cylinder></geometry><material><ambient>0.15 0.15 0.15 1</ambient><diffuse>0.20 0.20 0.20 1</diffuse></material></visual>
+        <visual name="radome"><pose>0.55 0.55 2.15 0 0 0</pose><geometry><sphere><radius>0.08</radius></sphere></geometry><material><ambient>0.92 0.92 0.92 1</ambient><diffuse>0.95 0.95 0.95 1</diffuse></material></visual>
+        <!-- Front Rack Faceplate & Forced-Air Cooling Grilles -->
+        <visual name="faceplate"><pose>0 -0.735 0.62 0 0 0</pose><geometry><box><size>0.80 0.01 0.70</size></box></geometry><material><ambient>0.10 0.10 0.10 1</ambient><diffuse>0.12 0.12 0.12 1</diffuse></material></visual>
+        <visual name="led_cluster"><pose>0 -0.742 0.85 0 0 0</pose><geometry><box><size>0.25 0.01 0.06</size></box></geometry><material><ambient>0.1 0.8 0.2 1</ambient><diffuse>0.1 0.9 0.2 1</diffuse><emissive>0.2 0.8 0.2 1</emissive></material></visual>
       </link>
     </model>
 
-    <!-- TARGET 7: Cyan Scientific Crate - Far-North Turnaround Boundary (X_ned=106.0, Y_ned=2.0) -->
-    <!-- Tests longitudinal camera edge at northern survey perimeter -->
+    <!-- TARGET 7: UNEXPLODED ORDNANCE BUNKER [CYAN] - Far-North Turnaround Boundary (X_ned=106.0, Y_ned=2.0) -->
+    <!-- Blast fragmentation isolation safe-crate with heavy steel containment collars & hazard warning diamond -->
     <model name="target_cube_cyan">
       <static>true</static>
       <pose>2.0 106.0 0 0 0 0.22</pose>
       <link name="link">
         <collision name="col"><pose>0 0 0.6 0 0 0</pose><geometry><box><size>1.5 1.5 1.2</size></box></geometry></collision>
-        <visual name="skid_left"><pose>-0.55 0 0.06 0 0 0</pose><geometry><box><size>0.15 1.5 0.12</size></box></geometry><material><ambient>0.15 0.15 0.15 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material></visual>
-        <visual name="skid_right"><pose>0.55 0 0.06 0 0 0</pose><geometry><box><size>0.15 1.5 0.12</size></box></geometry><material><ambient>0.15 0.15 0.15 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material></visual>
-        <visual name="body"><pose>0 0 0.64 0 0 0</pose><geometry><box><size>1.46 1.46 1.04</size></box></geometry><material><ambient>0.04 0.82 0.88 1</ambient><diffuse>0.06 0.88 0.94 1</diffuse><specular>0.3 0.3 0.3 1</specular></material></visual>
-        <visual name="lid_trim"><pose>0 0 1.17 0 0 0</pose><geometry><box><size>1.50 1.50 0.04</size></box></geometry><material><ambient>0.18 0.18 0.18 1</ambient><diffuse>0.18 0.18 0.18 1</diffuse></material></visual>
+        <!-- Heavy Blast Foundation Pad -->
+        <visual name="skid_left"><pose>-0.55 0 0.06 0 0 0</pose><geometry><box><size>0.16 1.50 0.12</size></box></geometry><material><ambient>0.12 0.12 0.12 1</ambient><diffuse>0.14 0.14 0.14 1</diffuse></material></visual>
+        <visual name="skid_right"><pose>0.55 0 0.06 0 0 0</pose><geometry><box><size>0.16 1.50 0.12</size></box></geometry><material><ambient>0.12 0.12 0.12 1</ambient><diffuse>0.14 0.14 0.14 1</diffuse></material></visual>
+        <!-- Main Cyan Blast Containment Vessel Body -->
+        <visual name="body"><pose>0 0 0.62 0 0 0</pose><geometry><box><size>1.44 1.44 1.02</size></box></geometry><material><ambient>0.04 0.82 0.88 1</ambient><diffuse>0.06 0.88 0.94 1</diffuse><specular>0.3 0.3 0.3 1</specular></material></visual>
+        <!-- Heavy Ballistic Steel Retention Collars Wrapping Vault -->
+        <visual name="collar_lower"><pose>0 0 0.35 0 0 0</pose><geometry><box><size>1.49 1.49 0.08</size></box></geometry><material><ambient>0.10 0.10 0.10 1</ambient><diffuse>0.12 0.12 0.12 1</diffuse></material></visual>
+        <visual name="collar_upper"><pose>0 0 0.85 0 0 0</pose><geometry><box><size>1.49 1.49 0.08</size></box></geometry><material><ambient>0.10 0.10 0.10 1</ambient><diffuse>0.12 0.12 0.12 1</diffuse></material></visual>
+        <!-- Explosive Hazard Warning Diamond on Top Face -->
+        <visual name="hazard_diamond"><pose>0 0 1.14 0 0 0.7854</pose><geometry><box><size>0.56 0.56 0.02</size></box></geometry><material><ambient>0.88 0.12 0.12 1</ambient><diffuse>0.92 0.14 0.14 1</diffuse></material></visual>
+        <visual name="hazard_center"><pose>0 0 1.155 0 0 0.7854</pose><geometry><box><size>0.36 0.36 0.01</size></box></geometry><material><ambient>0.95 0.95 0.95 1</ambient><diffuse>0.98 0.98 0.98 1</diffuse></material></visual>
+        <!-- Heavy Crane Lifting Lugs on Sides -->
+        <visual name="lug_l"><pose>-0.74 0 0.80 0 1.5708 0</pose><geometry><cylinder><radius>0.08</radius><length>0.06</length></cylinder></geometry><material><ambient>0.12 0.12 0.12 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material></visual>
+        <visual name="lug_r"><pose>0.74 0 0.80 0 1.5708 0</pose><geometry><cylinder><radius>0.08</radius><length>0.06</length></cylinder></geometry><material><ambient>0.12 0.12 0.12 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material></visual>
       </link>
     </model>
 
@@ -607,6 +702,11 @@
         <visual name="floor"><pose>0 0 0.05 0 0 0</pose><geometry><box><size>7.0 7.0 0.10</size></box></geometry><material><ambient>0.38 0.36 0.34 1</ambient><diffuse>0.42 0.40 0.38 1</diffuse></material></visual>
         <!-- Fallen column -->
         <visual name="column"><pose>2.0 -1.5 0.2 0 1.4 0.3</pose><geometry><cylinder><radius>0.20</radius><length>2.8</length></cylinder></geometry><material><ambient>0.50 0.48 0.44 1</ambient><diffuse>0.54 0.52 0.48 1</diffuse></material></visual>
+        <!-- Crushed Structural Steel I-Beam Tilted Across Rubble -->
+        <visual name="ibeam"><pose>0.2 1.2 0.95 0.35 0.25 -0.2</pose><geometry><box><size>0.25 4.8 0.18</size></box></geometry><material><ambient>0.25 0.18 0.14 1</ambient><diffuse>0.32 0.24 0.18 1</diffuse><specular>0.2 0.2 0.2 1</specular></material></visual>
+        <!-- Interior Masonry Rubble Blocks Inside Floor -->
+        <visual name="block_1"><pose>-1.2 0.8 0.25 0.1 0.2 0.4</pose><geometry><box><size>0.8 0.6 0.4</size></box></geometry><material><ambient>0.45 0.43 0.40 1</ambient><diffuse>0.49 0.47 0.44 1</diffuse></material></visual>
+        <visual name="block_2"><pose>0.8 -0.8 0.20 -0.2 0.1 0.6</pose><geometry><box><size>0.7 0.5 0.35</size></box></geometry><material><ambient>0.43 0.41 0.38 1</ambient><diffuse>0.47 0.45 0.42 1</diffuse></material></visual>
       </link>
     </model>
 
@@ -623,6 +723,20 @@
         <!-- Rebar sticking out -->
         <visual name="rebar_a"><pose>1.5 0.8 0.3 0.8 0.2 0</pose><geometry><cylinder><radius>0.015</radius><length>1.2</length></cylinder></geometry><material><ambient>0.30 0.25 0.20 1</ambient><diffuse>0.35 0.28 0.22 1</diffuse></material></visual>
         <visual name="rebar_b"><pose>-1.0 -0.5 0.25 -0.5 0.6 0.3</pose><geometry><cylinder><radius>0.015</radius><length>0.9</length></cylinder></geometry><material><ambient>0.32 0.26 0.20 1</ambient><diffuse>0.36 0.30 0.24 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- Fallen Street Lamp Pole near Collapse Zone 1 -->
+    <model name="fallen_street_lamp">
+      <static>true</static>
+      <pose>11.0 74.0 0 0 0 0.65</pose>
+      <link name="link">
+        <!-- Broken Lamp Post Base Stub -->
+        <visual name="stub"><pose>0 0 0.25 0 0 0</pose><geometry><cylinder><radius>0.14</radius><length>0.50</length></cylinder></geometry><material><ambient>0.25 0.25 0.25 1</ambient><diffuse>0.30 0.30 0.30 1</diffuse></material></visual>
+        <!-- Fallen Main Pole Shaft -->
+        <visual name="shaft"><pose>2.2 0 0.10 0 1.5708 0</pose><geometry><cylinder><radius>0.09</radius><length>4.2</length></cylinder></geometry><material><ambient>0.35 0.36 0.38 1</ambient><diffuse>0.40 0.42 0.45 1</diffuse></material></visual>
+        <!-- Luminaire Head Fixture -->
+        <visual name="fixture"><pose>4.4 0 0.15 0 0 0</pose><geometry><box><size>0.65 0.30 0.22</size></box></geometry><material><ambient>0.30 0.30 0.30 1</ambient><diffuse>0.35 0.35 0.35 1</diffuse></material></visual>
       </link>
     </model>
 
@@ -658,6 +772,63 @@
       </link>
     </model>
 
+    <!-- Emergency Floodlight Tower at FOB Staging Compound -->
+    <model name="fob_floodlight_tower">
+      <static>true</static>
+      <pose>-15.5 4.0 0 0 0 0.4</pose>
+      <link name="link">
+        <!-- Generator Base Chassis -->
+        <visual name="base"><pose>0 0 0.4 0 0 0</pose><geometry><box><size>1.1 1.4 0.8</size></box></geometry><material><ambient>0.75 0.45 0.05 1</ambient><diffuse>0.82 0.50 0.08 1</diffuse></material></visual>
+        <!-- Telescoping Vertical Mast -->
+        <visual name="mast"><pose>0 0 2.4 0 0 0</pose><geometry><cylinder><radius>0.06</radius><length>3.4</length></cylinder></geometry><material><ambient>0.6 0.6 0.6 1</ambient><diffuse>0.7 0.7 0.7 1</diffuse></material></visual>
+        <!-- Dual High-Intensity Floodlight Heads with Emissive Diffusers -->
+        <visual name="light_bar"><pose>0 0 4.15 0 0 0</pose><geometry><box><size>1.2 0.12 0.12</size></box></geometry><material><ambient>0.2 0.2 0.2 1</ambient><diffuse>0.25 0.25 0.25 1</diffuse></material></visual>
+        <visual name="head_l"><pose>-0.45 0.15 4.05 0.4 0 0</pose><geometry><box><size>0.35 0.25 0.20</size></box></geometry><material><ambient>0.95 0.95 0.90 1</ambient><diffuse>1.0 1.0 0.95 1</diffuse><emissive>0.7 0.7 0.65 1</emissive></material></visual>
+        <visual name="head_r"><pose>0.45 0.15 4.05 0.4 0 0</pose><geometry><box><size>0.35 0.25 0.20</size></box></geometry><material><ambient>0.95 0.95 0.90 1</ambient><diffuse>1.0 1.0 0.95 1</diffuse><emissive>0.7 0.7 0.65 1</emissive></material></visual>
+      </link>
+    </model>
+
+    <!-- Field Triage Stretchers on Trestles Outside FOB Tent -->
+    <model name="fob_triage_stretchers">
+      <static>true</static>
+      <pose>-8.5 10.5 0 0 0 0.1</pose>
+      <link name="link">
+        <!-- Stretcher 1 -->
+        <visual name="s1_canvas"><pose>0 -0.7 0.55 0 0 0</pose><geometry><box><size>0.65 1.95 0.04</size></box></geometry><material><ambient>0.38 0.42 0.32 1</ambient><diffuse>0.44 0.48 0.36 1</diffuse></material></visual>
+        <visual name="s1_frame"><pose>0 -0.7 0.28 0 0 0</pose><geometry><box><size>0.68 1.98 0.52</size></box></geometry><material><ambient>0.2 0.2 0.2 1</ambient><diffuse>0.25 0.25 0.25 1</diffuse></material></visual>
+        <!-- Stretcher 2 -->
+        <visual name="s2_canvas"><pose>0 0.7 0.55 0 0 0</pose><geometry><box><size>0.65 1.95 0.04</size></box></geometry><material><ambient>0.38 0.42 0.32 1</ambient><diffuse>0.44 0.48 0.36 1</diffuse></material></visual>
+        <visual name="s2_frame"><pose>0 0.7 0.28 0 0 0</pose><geometry><box><size>0.68 1.98 0.52</size></box></geometry><material><ambient>0.2 0.2 0.2 1</ambient><diffuse>0.25 0.25 0.25 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- Tactical Comms Tripod Antenna at FOB Staging -->
+    <model name="fob_comms_tripod">
+      <static>true</static>
+      <pose>-15.0 14.0 0 0 0 0</pose>
+      <link name="link">
+        <!-- Tripod Hub -->
+        <visual name="hub"><pose>0 0 1.2 0 0 0</pose><geometry><cylinder><radius>0.08</radius><length>0.15</length></cylinder></geometry><material><ambient>0.15 0.15 0.15 1</ambient><diffuse>0.2 0.2 0.2 1</diffuse></material></visual>
+        <!-- 3 Tripod Legs -->
+        <visual name="leg_1"><pose>0 0.45 0.6 0.45 0 0</pose><geometry><cylinder><radius>0.03</radius><length>1.35</length></cylinder></geometry><material><ambient>0.5 0.5 0.5 1</ambient><diffuse>0.6 0.6 0.6 1</diffuse></material></visual>
+        <visual name="leg_2"><pose>-0.39 -0.22 0.6 -0.22 0.39 0</pose><geometry><cylinder><radius>0.03</radius><length>1.35</length></cylinder></geometry><material><ambient>0.5 0.5 0.5 1</ambient><diffuse>0.6 0.6 0.6 1</diffuse></material></visual>
+        <visual name="leg_3"><pose>0.39 -0.22 0.6 -0.22 -0.39 0</pose><geometry><cylinder><radius>0.03</radius><length>1.35</length></cylinder></geometry><material><ambient>0.5 0.5 0.5 1</ambient><diffuse>0.6 0.6 0.6 1</diffuse></material></visual>
+        <!-- Vertical Mast & Antenna -->
+        <visual name="mast"><pose>0 0 2.2 0 0 0</pose><geometry><cylinder><radius>0.04</radius><length>2.0</length></cylinder></geometry><material><ambient>0.5 0.5 0.5 1</ambient><diffuse>0.6 0.6 0.6 1</diffuse></material></visual>
+        <visual name="whip"><pose>0 0 3.8 0 0 0</pose><geometry><cylinder><radius>0.015</radius><length>1.4</length></cylinder></geometry><material><ambient>0.2 0.2 0.2 1</ambient><diffuse>0.25 0.25 0.25 1</diffuse></material></visual>
+      </link>
+    </model>
+
+    <!-- Fuel Jerry Cans beside Portable Generator -->
+    <model name="fob_fuel_cans">
+      <static>true</static>
+      <pose>-6.8 4.2 0 0 0 0.3</pose>
+      <link name="link">
+        <visual name="can_1"><pose>-0.2 0 0.25 0 0 0</pose><geometry><box><size>0.20 0.38 0.48</size></box></geometry><material><ambient>0.22 0.32 0.18 1</ambient><diffuse>0.28 0.38 0.22 1</diffuse></material></visual>
+        <visual name="can_2"><pose>0.2 0 0.25 0 0 0</pose><geometry><box><size>0.20 0.38 0.48</size></box></geometry><material><ambient>0.22 0.32 0.18 1</ambient><diffuse>0.28 0.38 0.22 1</diffuse></material></visual>
+      </link>
+    </model>
+
     <!-- Parked Utility Truck (near FOB tent, facing north) -->
     <model name="utility_truck">
       <static>true</static>
@@ -669,17 +840,59 @@
         <visual name="cab"><pose>0 2.2 0.95 0 0 0</pose><geometry><box><size>2.1 1.8 1.0</size></box></geometry><material><ambient>0.85 0.82 0.75 1</ambient><diffuse>0.88 0.85 0.78 1</diffuse></material></visual>
         <!-- Cab windshield (darker) -->
         <visual name="windshield"><pose>0 3.1 1.1 0.1 0 0</pose><geometry><box><size>1.8 0.05 0.6</size></box></geometry><material><ambient>0.12 0.14 0.18 1</ambient><diffuse>0.15 0.18 0.22 1</diffuse></material></visual>
+        <!-- Heavy Steel Front Bull Bar with Recovery Winch -->
+        <visual name="bull_bar"><pose>0 3.3 0.65 0 0 0</pose><geometry><box><size>1.9 0.15 0.60</size></box></geometry><material><ambient>0.15 0.15 0.15 1</ambient><diffuse>0.18 0.18 0.18 1</diffuse></material></visual>
+        <visual name="winch"><pose>0 3.4 0.55 0 1.5708 0</pose><geometry><cylinder><radius>0.12</radius><length>0.35</length></cylinder></geometry><material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.12 0.12 0.12 1</diffuse></material></visual>
+        <!-- Roof-Mounted Emergency Amber Warning Lightbar -->
+        <visual name="lightbar"><pose>0 2.2 1.52 0 0 0</pose><geometry><box><size>1.4 0.22 0.10</size></box></geometry><material><ambient>0.95 0.55 0.05 1</ambient><diffuse>1.0 0.65 0.10 1</diffuse><emissive>0.6 0.35 0.05 1</emissive></material></visual>
+        <!-- Side Rearview Mirrors -->
+        <visual name="mirror_l"><pose>-1.15 2.5 1.15 0 0 0</pose><geometry><box><size>0.25 0.12 0.18</size></box></geometry><material><ambient>0.15 0.15 0.15 1</ambient><diffuse>0.18 0.18 0.18 1</diffuse></material></visual>
+        <visual name="mirror_r"><pose>1.15 2.5 1.15 0 0 0</pose><geometry><box><size>0.25 0.12 0.18</size></box></geometry><material><ambient>0.15 0.15 0.15 1</ambient><diffuse>0.18 0.18 0.18 1</diffuse></material></visual>
         <!-- Flatbed cargo area -->
         <visual name="bed"><pose>0 -0.8 0.70 0 0 0</pose><geometry><box><size>2.1 3.5 0.18</size></box></geometry><material><ambient>0.28 0.26 0.22 1</ambient><diffuse>0.32 0.30 0.26 1</diffuse></material></visual>
         <!-- Bed side rails -->
         <visual name="rail_l"><pose>-1.0 -0.8 0.95 0 0 0</pose><geometry><box><size>0.06 3.5 0.35</size></box></geometry><material><ambient>0.28 0.26 0.22 1</ambient><diffuse>0.32 0.30 0.26 1</diffuse></material></visual>
         <visual name="rail_r"><pose>1.0 -0.8 0.95 0 0 0</pose><geometry><box><size>0.06 3.5 0.35</size></box></geometry><material><ambient>0.28 0.26 0.22 1</ambient><diffuse>0.32 0.30 0.26 1</diffuse></material></visual>
+        <!-- Spare Off-Road Wheel in Cargo Bed -->
+        <visual name="spare_tire"><pose>0.6 0.4 0.92 1.5708 0 0</pose><geometry><cylinder><radius>0.36</radius><length>0.26</length></cylinder></geometry><material><ambient>0.10 0.10 0.10 1</ambient><diffuse>0.12 0.12 0.12 1</diffuse></material></visual>
         <!-- Wheels (4 cylinders) -->
         <visual name="wheel_fl"><pose>-1.0 1.8 0.30 1.5708 0 0</pose><geometry><cylinder><radius>0.30</radius><length>0.22</length></cylinder></geometry><material><ambient>0.10 0.10 0.10 1</ambient><diffuse>0.12 0.12 0.12 1</diffuse></material></visual>
         <visual name="wheel_fr"><pose>1.0 1.8 0.30 1.5708 0 0</pose><geometry><cylinder><radius>0.30</radius><length>0.22</length></cylinder></geometry><material><ambient>0.10 0.10 0.10 1</ambient><diffuse>0.12 0.12 0.12 1</diffuse></material></visual>
         <visual name="wheel_rl"><pose>-1.0 -1.5 0.30 1.5708 0 0</pose><geometry><cylinder><radius>0.30</radius><length>0.22</length></cylinder></geometry><material><ambient>0.10 0.10 0.10 1</ambient><diffuse>0.12 0.12 0.12 1</diffuse></material></visual>
         <visual name="wheel_rr"><pose>1.0 -1.5 0.30 1.5708 0 0</pose><geometry><cylinder><radius>0.30</radius><length>0.22</length></cylinder></geometry><material><ambient>0.10 0.10 0.10 1</ambient><diffuse>0.12 0.12 0.12 1</diffuse></material></visual>
         <collision name="col"><pose>0 0 0.65 0 0 0</pose><geometry><box><size>2.2 5.5 1.3</size></box></geometry></collision>
+      </link>
+    </model>
+
+    <!-- Industrial Wooden Cable Reel / Spool near East Staging -->
+    <model name="industrial_cable_spool">
+      <static>true</static>
+      <pose>32.0 102.0 0 0 0 0.5</pose>
+      <link name="link">
+        <visual name="flange_bot"><pose>0 0 0.05 0 0 0</pose><geometry><cylinder><radius>0.75</radius><length>0.10</length></cylinder></geometry><material><ambient>0.45 0.35 0.22 1</ambient><diffuse>0.52 0.40 0.26 1</diffuse></material></visual>
+        <visual name="drum"><pose>0 0 0.55 0 0 0</pose><geometry><cylinder><radius>0.42</radius><length>0.90</length></cylinder></geometry><material><ambient>0.18 0.18 0.18 1</ambient><diffuse>0.22 0.22 0.22 1</diffuse></material></visual>
+        <visual name="flange_top"><pose>0 0 1.05 0 0 0</pose><geometry><cylinder><radius>0.75</radius><length>0.10</length></cylinder></geometry><material><ambient>0.45 0.35 0.22 1</ambient><diffuse>0.52 0.40 0.26 1</diffuse></material></visual>
+        <collision name="col"><pose>0 0 0.55 0 0 0</pose><geometry><cylinder><radius>0.75</radius><length>1.10</length></cylinder></geometry></collision>
+      </link>
+    </model>
+
+    <!-- Highway Traffic Safety Cones (Hazard Demarcation) -->
+    <model name="hazard_traffic_cones">
+      <static>true</static>
+      <pose>22.0 62.0 0 0 0 0</pose>
+      <link name="link">
+        <!-- Cone 1 -->
+        <visual name="c1_base"><pose>-1.5 0 0.025 0 0 0</pose><geometry><box><size>0.40 0.40 0.05</size></box></geometry><material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.1 0.1 0.1 1</diffuse></material></visual>
+        <visual name="c1_cone"><pose>-1.5 0 0.40 0 0 0</pose><geometry><cylinder><radius>0.16</radius><length>0.75</length></cylinder></geometry><material><ambient>0.95 0.35 0.02 1</ambient><diffuse>0.98 0.40 0.05 1</diffuse></material></visual>
+        <visual name="c1_collar"><pose>-1.5 0 0.45 0 0 0</pose><geometry><cylinder><radius>0.165</radius><length>0.18</length></cylinder></geometry><material><ambient>0.95 0.95 0.95 1</ambient><diffuse>0.98 0.98 0.98 1</diffuse></material></visual>
+        <!-- Cone 2 -->
+        <visual name="c2_base"><pose>0 0 0.025 0 0 0</pose><geometry><box><size>0.40 0.40 0.05</size></box></geometry><material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.1 0.1 0.1 1</diffuse></material></visual>
+        <visual name="c2_cone"><pose>0 0 0.40 0 0 0</pose><geometry><cylinder><radius>0.16</radius><length>0.75</length></cylinder></geometry><material><ambient>0.95 0.35 0.02 1</ambient><diffuse>0.98 0.40 0.05 1</diffuse></material></visual>
+        <visual name="c2_collar"><pose>0 0 0.45 0 0 0</pose><geometry><cylinder><radius>0.165</radius><length>0.18</length></cylinder></geometry><material><ambient>0.95 0.95 0.95 1</ambient><diffuse>0.98 0.98 0.98 1</diffuse></material></visual>
+        <!-- Cone 3 -->
+        <visual name="c3_base"><pose>1.5 0 0.025 0 0 0</pose><geometry><box><size>0.40 0.40 0.05</size></box></geometry><material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.1 0.1 0.1 1</diffuse></material></visual>
+        <visual name="c3_cone"><pose>1.5 0 0.40 0 0 0</pose><geometry><cylinder><radius>0.16</radius><length>0.75</length></cylinder></geometry><material><ambient>0.95 0.35 0.02 1</ambient><diffuse>0.98 0.40 0.05 1</diffuse></material></visual>
+        <visual name="c3_collar"><pose>1.5 0 0.45 0 0 0</pose><geometry><cylinder><radius>0.165</radius><length>0.18</length></cylinder></geometry><material><ambient>0.95 0.95 0.95 1</ambient><diffuse>0.98 0.98 0.98 1</diffuse></material></visual>
       </link>
     </model>
 
